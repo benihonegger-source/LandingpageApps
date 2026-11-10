@@ -35,5 +35,8 @@ Die Startseite und alle Apps bauen keine Verbindungen ins Internet auf. Die Schr
 in den HTML-Dateien eingebettet (alle unter SIL Open Font License), und jede Seite hat eine
 Sicherheitsregel (`Content-Security-Policy`), die Anfragen nach aussen sperrt.
 
+Ausnahme: In der Tierbibliothek öffnet der Knopf «Folge anschauen» die ARD Mediathek in einem neuen Tab,
+aber erst, wenn ein Kind darauf tippt. Die Vorlesefunktion nutzt die Stimmen des Geräts.
+
 Beim Einbauen einer neuen App darauf achten, dass sie keine Schriften oder Skripte von fremden
 Adressen lädt (z.B. `fonts.googleapis.com`).
