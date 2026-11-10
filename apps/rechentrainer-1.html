@@ -191,7 +191,7 @@ p{margin:0}
 .lv{display:inline-flex;gap:.22em;vertical-align:middle}
 .lv i{width:.62em;height:.62em;border-radius:50%;box-shadow:inset 0 0 0 2px var(--ink-faint)}
 .lv i.on{background:var(--red);box-shadow:inset 0 -2px 0 var(--red-deep)}
-.modes{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:var(--s4)}
+.modes{display:grid;grid-template-columns:1.6fr 1fr;gap:var(--s4)}
 .mode{flex-direction:column;gap:var(--s1);padding:var(--s5) var(--s3);font-size:var(--text-2xl);text-align:center}
 .mode .ico{width:1.1em;height:1.1em}
 .mode .chips .chip{width:.8em;height:.8em}
@@ -228,8 +228,6 @@ p{margin:0}
 .fgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) .7rem repeat(5,minmax(0,1fr));gap:clamp(4px,1.2vw,9px) clamp(3px,1vw,8px);padding:var(--s2)}
 .sep{display:block;border-left:2px dashed var(--table-deep);margin:12% 0 12% calc(50% - 1px)}
 .cell{position:relative;display:grid;place-items:center;aspect-ratio:1/1;max-width:100%;border-radius:50%;background:rgb(var(--shade) / .1);box-shadow:inset 0 2px 3px rgb(var(--shade) / .28)}
-button.cell{transition:transform .08s}
-button.cell:active{transform:scale(.92)}
 .d{display:block;position:relative;width:88%;height:88%;border-radius:50%}
 .d.r{background:var(--red);box-shadow:inset 0 -3px 0 var(--red-deep),0 2px 2px rgb(var(--shade) / .3)}
 .d.b{background:var(--blue);box-shadow:inset 0 -3px 0 var(--blue-deep),0 2px 2px rgb(var(--shade) / .3)}
@@ -256,8 +254,6 @@ button.cell:active{transform:scale(.92)}
 /* Rechnung: die gesuchte Zahl ist das Grösste auf dem Bildschirm */
 .formula{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.22em;font-family:var(--font-display);font-weight:var(--font-bold);font-size:var(--text-5xl);line-height:var(--leading-solid);font-variant-numeric:tabular-nums}
 .formula .op{color:var(--ink-faint)}
-.formula .red{color:var(--red)}
-.formula .blue{color:var(--blue)}
 .slot{display:inline-grid;place-items:center;min-width:1.5em;height:1.3em;padding:0 .18em;border-radius:12px;font-size:var(--text-6xl);background:var(--mark-soft);color:var(--ink);box-shadow:inset 0 0 0 5px var(--mark)}
 .slot.empty{color:var(--mark-ink)}
 @media (max-width:560px){.formula{font-size:var(--text-4xl)}.slot{font-size:var(--text-5xl)}}
@@ -295,13 +291,6 @@ button.cell:active{transform:scale(.92)}
 .legend{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s2) var(--s4);margin-top:var(--s2);font-size:var(--text-sm);font-weight:var(--font-regular);color:var(--ink-soft)}
 .legend .dot{width:.9em;height:.9em;vertical-align:-.1em;margin-right:.3em}
 
-/* Erkunden */
-.screen-title{font-size:var(--text-2xl)}
-.tools{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s3)}
-.tool{padding:var(--s2) var(--s4);font-size:var(--text-base);border:3px solid transparent}
-.tool.sel{border-color:var(--blue);background:var(--paper-hi)}
-.minirow{display:inline-flex;flex-wrap:wrap;gap:2px;max-width:3.6em}
-.minirow i{width:.55em;height:.55em;border-radius:50%;background:var(--red)}
 
 /* Fenster und Meldungen */
 .overlay{
@@ -420,9 +409,6 @@ const ICONS = {
   retry:'<path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/>',
   pencil:'<path d="M4 20l1-4.5L16 4.5l3.5 3.5L8.5 19z"/><path d="M14 7l3.5 3.5"/>',
   bolt:'<path fill="currentColor" stroke="none" d="M13.5 2 4.5 13.5h6.5L10 22l9-11.5h-6.5z"/>',
-  eraser:'<path d="M3.5 15.5l9-9 7 7-6.5 6.5H8z"/><path d="M8.5 10.5l7 7M13 20h7.5"/>',
-  trash:'<path d="M4 7h16M9.5 7V4.5h5V7M6 7l1 13h10l1-13"/>',
-  dice:'<rect x="4" y="4" width="16" height="16" rx="3.5"/><circle fill="currentColor" stroke="none" cx="8.8" cy="8.8" r="1.5"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="1.5"/><circle fill="currentColor" stroke="none" cx="15.2" cy="15.2" r="1.5"/>'
 };
 function ic(name, cls=''){
   return `<svg class="ico ${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</g></svg>`;
@@ -621,7 +607,7 @@ function makeTasks(m, L){
 const st = {
   screen:'home', m:1, L:1, mode:'practice', sound:true,
   progress:{}, stars:0, name:'', dirty:false,
-  round:null, tool:'r', sandbox:cellsBlank(), modal:null
+  round:null, modal:null
 };
 let blitzTimer=null, nextTimer=null, toastTimer=null;
 const blank = () => ({r:0,b:0,bb:0,t:0,c:0});
@@ -638,7 +624,6 @@ function render(){
   else if(st.screen==='module') h=moduleV();
   else if(st.screen==='play') h=playV();
   else if(st.screen==='end') h=endV();
-  else if(st.screen==='explore') h=exploreV();
   if(st.modal) h += modalV();
   $app.innerHTML = `<div class="wrap screen-${st.screen}">${h}</div>`;
 }
@@ -705,17 +690,16 @@ function moduleV(){
   <div class="modes">
     <button class="btn mode primary" data-a="start" data-mode="practice">${ic('pencil')}Üben<small>10 Aufgaben</small></button>
     <button class="btn mode" data-a="start" data-mode="blitz">${ic('bolt')}Blitz<small>Nur kurz schauen</small></button>
-    <button class="btn mode" data-a="explore">${chipsV()}Erkunden<small>Plättchen frei legen</small></button>
   </div>`;
 }
 
-function frameV(cells, interactive=false){
+function frameV(cells){
   let h='';
   for(let row=0;row<2;row++) for(let col=0;col<10;col++){
     if(col===5) h+='<span class="sep"></span>';
     const i=row*10+col, c=cells[i];
     const disc = c.c ? `<span class="d ${c.c}${c.x?' x':''}"></span>` : '';
-    h += interactive ? `<button class="cell" data-a="cell" data-i="${i}" aria-label="Feld ${i+1}">${disc}</button>` : `<span class="cell">${disc}</span>`;
+    h += `<span class="cell">${disc}</span>`;
   }
   return `<div class="frame"><div class="fgrid">${h}</div></div>`;
 }
@@ -803,29 +787,6 @@ function endV(){
     </div>
     <div class="legend"><span><i class="dot g"></i>sofort richtig</span><span><i class="dot y"></i>mit Hilfe</span><span><i class="dot o"></i>nochmal geübt</span></div>
   </div>`;
-}
-
-function exploreV(){
-  const c=st.sandbox, red=c.filter(x=>x.c==='r').length, blue=c.filter(x=>x.c==='b').length;
-  const tools=[['r','<i class="chip r"></i>Rot'],['b','<i class="chip b"></i>Blau'],['e',ic('eraser')+'Wegnehmen']];
-  const row = n => `<span class="minirow" aria-hidden="true">${'<i></i>'.repeat(n)}</span>`;
-  return `
-  <header class="top">
-    <button class="btn iconbtn" data-a="toModule" aria-label="Zurück zur Übung">${ic('back')}</button>
-    <h1 class="screen-title">Erkunden</h1>
-  </header>
-  <section class="taskcard">
-    <div class="q center">Tippe auf die Kreise und lege Plättchen!</div>
-    <div class="tools">${tools.map(([k,lab])=>`<button class="btn tool ${st.tool===k?'sel':''}" data-a="tool" data-t="${k}" aria-pressed="${st.tool===k}">${lab}</button>`).join('')}</div>
-    ${frameV(c,true)}
-    <div class="formula"><span class="n red">${red}</span><span class="op">+</span><span class="n blue">${blue}</span><span class="op">=</span><span class="n">${red+blue}</span></div>
-    <div class="tools">
-      <button class="btn tool" data-a="fill5">${row(5)}5 rote legen</button>
-      <button class="btn tool" data-a="fill10">${row(10)}10 rote legen</button>
-      <button class="btn tool" data-a="rand">${ic('dice')}Zufall</button>
-      <button class="btn tool" data-a="clear">${ic('trash')}Alles wegräumen</button>
-    </div>
-  </section>`;
 }
 
 function modalV(){
@@ -1146,7 +1107,6 @@ const act = {
   openMod(d){ snd.tap(); st.m=+d.m; st.L=recLevel(st.m); st.screen='module'; render(); },
   level(d){ snd.tap(); st.L=+d.l; render(); },
   start(d){ snd.tap(); st.mode=d.mode; startRound(); },
-  explore(){ snd.tap(); st.sandbox=cellsBlank(); st.tool='r'; st.screen='explore'; render(); },
   toModule(){ clearTimers(); st.round=null; st.screen='module'; render(); },
   d(d){ digit(d.d); }, del(){ delDigit(); }, ok(){ submit(); }, next(){ snd.tap(); nextTask(); },
   help(){ const r=st.round; if(!r) return; snd.tap(); r.help=true; r.frameHidden=false; render(); },
@@ -1166,12 +1126,6 @@ const act = {
   load(){ if(st.dirty){ st.modal='loadWarn'; render(); return; } fileIn.click(); },
   loadNow(){ st.modal=null; render(); fileIn.click(); },
   info(){ st.modal='info'; render(); },
-  tool(d){ snd.tap(); st.tool=d.t; render(); },
-  cell(d){ snd.tap(); const c=st.sandbox[+d.i]; c.x=false; c.c = st.tool==='e' ? '' : (c.c===st.tool ? '' : st.tool); render(); },
-  clear(){ snd.tap(); st.sandbox=cellsBlank(); render(); },
-  fill5(){ snd.tap(); st.sandbox=fSeq(5); render(); },
-  fill10(){ snd.tap(); st.sandbox=fSeq(10); render(); },
-  rand(){ snd.tap(); const a=R(1,12); st.sandbox=fSeq(a, R(0,Math.min(8,20-a))); render(); }
 };
 $app.addEventListener('click', e => {
   const b=e.target.closest('[data-a]'); if(!b || b.disabled) return;
