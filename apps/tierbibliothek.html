@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tierbibliothek</title>
+<!-- Datenschutz: Die App darf keine Verbindungen ins Internet aufbauen und nichts nachladen.
+     Nur der Knopf «Folge anschauen» öffnet beim Antippen die ARD Mediathek in einem neuen Tab. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#e3f4ff">
+<style>
+/* Layout: Sonniger Frühlingstag – heller Himmel oben, Wiese unten, weisse Tierkarten mit bunten Kreisen. Bewusst immer hell. */
+:root{
+  color-scheme:light;
+  --sky:#e3f4ff; --meadow:#effbe3; --paper:#ffffff; --ink:#2b3a42; --ink-soft:#607078; --line:#e2edf2;
+  --accent:#ff8a3d; --accent-ink:#ffffff; --moss:#2f9e5e; --sun:#ffd43b; --sun-soft:#fff6cc;
+  --garten:#d9f7c6; --wald:#c9f0d9; --wasser:#cdeefe; --berge:#ece3fb; --luft:#fff1b8;
+  --kid:#ff8a3d; --ground:#9edb6e; --mole:#4a3f39; --crane:#8d949a; --crane-d:#2e3236;
+  --shadow:0 6px 18px rgba(64,140,190,.14);
+  --font-display: ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","Nunito","Varela Round","Trebuchet MS",system-ui,sans-serif;
+  --font-body: "Andika","Verdana","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{background:linear-gradient(180deg,var(--sky) 0,var(--sky) 220px,var(--meadow) 620px) var(--meadow);background-attachment:fixed;color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.5;min-height:100vh}
+body::after{content:"";position:fixed;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:var(--sun);box-shadow:0 0 0 18px rgba(255,212,59,.35),0 0 0 40px rgba(255,212,59,.15);z-index:-1;pointer-events:none}
+.wrap{max-width:980px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(2.2rem,7vw,3.3rem);color:var(--moss)}
+h2{font-size:1.35rem}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+
+/* Start */
+.intro{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.intro p{margin:0;color:var(--ink-soft);font-size:1.1rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.chip{border:2px solid var(--line);background:var(--paper);box-shadow:var(--shadow);border-radius:999px;padding:6px 14px;cursor:pointer;font-family:var(--font-display);font-weight:700}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px 14px;background:var(--paper);border:3px solid transparent;border-radius:26px;box-shadow:var(--shadow);cursor:pointer;text-align:center;transition:transform .15s}
+.card:hover{transform:translateY(-4px) rotate(-1deg);border-color:var(--sun)}
+.blob{width:96px;height:96px;border-radius:44% 56% 52% 48%/50% 44% 56% 50%;display:grid;place-items:center;font-size:56px;line-height:1}
+.blob svg{width:70px;height:70px}
+.card b{font-family:var(--font-display);font-size:1.15rem}
+.card small{color:var(--ink-soft);font-size:.85rem}
+
+/* Detail */
+.back{display:inline-block;text-decoration:none;border:0;background:none;color:var(--moss);font-family:var(--font-display);font-weight:700;font-size:1.05rem;cursor:pointer;padding:4px 0;margin-bottom:10px}
+.head{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.head .blob{width:120px;height:120px;font-size:72px}
+.head .blob svg{width:88px;height:88px}
+.head-txt{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.head-txt .sub{color:var(--ink-soft)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:.8rem;padding:2px 10px;border-radius:999px;background:var(--meadow);border:1px solid var(--line)}
+.tag.neu{border-color:var(--accent);color:var(--accent)}
+.video{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-family:var(--font-display);font-weight:700;padding:10px 20px;border-radius:999px;align-self:flex-start;box-shadow:0 4px 0 #e06a1f}
+.video .play{width:0;height:0;border-left:12px solid currentColor;border-top:8px solid transparent;border-bottom:8px solid transparent}
+.video-note{font-size:.85rem;color:var(--ink-soft)}
+.layout{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:18px;align-items:start}
+@media (max-width:760px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--paper);border:0;border-radius:26px;box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.col{display:flex;flex-direction:column;gap:18px;min-width:0}
+.reader{font-size:1.2rem;line-height:1.75;margin:0;max-width:62ch}
+.reader.l1{font-size:1.55rem;line-height:1.9}
+.reader.l2{font-size:1.35rem;line-height:1.8}
+.slider{display:flex;flex-direction:column;gap:4px;background:var(--sun-soft);border-radius:14px;padding:10px 14px}
+.slider label{font-family:var(--font-display);font-weight:700;font-size:.95rem}
+.slider input{width:100%;accent-color:var(--accent);height:32px;cursor:pointer}
+.ticks{display:flex;justify-content:space-between;font-size:.8rem;color:var(--ink-soft)}
+.ticks span.on{color:var(--accent);font-weight:700}
+.read{align-self:flex-start;border:0;background:var(--moss);color:#fff;border-radius:999px;padding:6px 18px;cursor:pointer;font-family:var(--font-display);font-weight:700}
+.readbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.vlabel{font-size:.85rem;color:var(--ink-soft)}
+#voice{font:inherit;font-size:.9rem;padding:5px 10px;border-radius:999px;border:2px solid var(--line);background:var(--sky);max-width:100%;min-width:0}
+dl.steck{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0}
+dl.steck dt{font-family:var(--font-display);font-weight:700;color:var(--moss);font-size:.95rem}
+dl.steck dd{margin:0;min-width:0}
+.fakt{background:var(--sun-soft);border:3px dashed var(--sun);border-radius:26px;padding:16px 18px}
+.fakt h3{font-size:1.05rem;margin-bottom:4px}
+.fakt p{margin:0}
+.scene{width:100%;height:auto;display:block}
+.scene text{fill:var(--ink);font-family:var(--font-display)}
+.me{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.95rem}
+.me input{width:5.5em;padding:4px 8px;border:2px solid var(--line);border-radius:10px;background:var(--sky);font-variant-numeric:tabular-nums}
+.vergleich{font-size:1.1rem;font-family:var(--font-display);margin:0}
+footer{margin-top:36px;color:var(--ink-soft);font-size:.85rem;max-width:65ch}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+html,body{margin:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="sym-maulwurf" viewBox="0 0 100 100">
+    <ellipse cx="48" cy="70" rx="40" ry="24" fill="var(--mole)"/>
+    <path d="M84 63 L99 69 L84 76 Z" fill="#e7a1a8"/>
+    <ellipse cx="70" cy="91" rx="11" ry="6" fill="#e7a1a8"/>
+    <ellipse cx="32" cy="92" rx="10" ry="5" fill="#e7a1a8"/>
+    <circle cx="76" cy="63" r="2" fill="#000"/>
+  </symbol>
+  <symbol id="sym-kranich" viewBox="0 0 100 100">
+    <path d="M8 40 Q2 52 14 56 L30 50 Z" fill="var(--crane-d)"/>
+    <ellipse cx="38" cy="46" rx="28" ry="15" fill="var(--crane)"/>
+    <path d="M60 42 Q70 30 74 12" stroke="var(--crane)" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <circle cx="76" cy="10" r="7" fill="var(--crane-d)"/>
+    <circle cx="77" cy="5" r="3" fill="#d23a2a"/>
+    <path d="M82 11 L97 15" stroke="var(--crane-d)" stroke-width="3" stroke-linecap="round"/>
+    <path d="M36 58 L34 99 M46 58 L48 99" stroke="var(--crane-d)" stroke-width="3"/>
+  </symbol>
+</svg>
+
+<div class="wrap" id="app"></div>
+
+<script>
+const RAUM = {
+  garten:{label:"Garten & Wiese"}, wald:{label:"Wald"}, wasser:{label:"Wasser & Moor"},
+  berge:{label:"Berge"}, luft:{label:"Luft"}
+};
+const ARD = t => "https://www.ardmediathek.de/suche/" + encodeURIComponent(t);
+
+const TIERE = [
+{id:"igel",name:"Igel",art:"der Igel",g:"🦔",raum:["garten","wald"],
+ s:{Grösse:"etwa 25 cm lang",Gewicht:"etwa 1 kg",Nahrung:"Käfer, Raupen, Würmer, Schnecken",Lebensraum:"Gärten, Hecken, Waldrand",Aktiv:"in der Nacht",Alter:"bis 7 Jahre"},
+ m:{cm:25,art:"lang"},v:{titel:"Wie kommt der Igel durch den Winter?",reihe:"Anna und die wilden Tiere"},
+ t:["Der Igel hat Stacheln. Er frisst Käfer. Im Winter schläft er.",
+    "Der Igel hat viele Stacheln. Bei Gefahr rollt er sich zu einer Kugel. In der Nacht sucht er Käfer und Würmer. Im Winter schläft er lange.",
+    "Der Igel hat etwa 7000 Stacheln auf dem Rücken. Wenn er Angst hat, rollt er sich zu einer stacheligen Kugel ein. Tagsüber schläft er unter Hecken oder in Laubhaufen. In der Nacht geht er auf Futtersuche und frisst Käfer, Raupen und Regenwürmer. Im Herbst frisst er sich ein dickes Fettpolster an. Dann hält er Winterschlaf bis zum Frühling."],
+ f:"Im Winterschlaf schlägt das Herz des Igels ganz langsam, und er atmet nur noch selten. So spart er Kraft bis zum Frühling."},
+{id:"eichhoernchen",name:"Eichhörnchen",art:"das Eichhörnchen",g:"🐿️",raum:["wald","garten"],
+ s:{Grösse:"etwa 45 cm mit Schwanz",Gewicht:"etwa 300 g",Nahrung:"Nüsse, Samen, Knospen, Pilze",Lebensraum:"Wälder, Parks, Gärten",Aktiv:"am Tag",Alter:"etwa 5 Jahre"},
+ m:{cm:45,art:"lang"},v:{titel:"Nüsse für die Eichhörnchen",reihe:"Anna und die wilden Tiere"},
+ t:["Das Eichhörnchen klettert auf Bäume. Es frisst Nüsse. Es versteckt Futter.",
+    "Das Eichhörnchen klettert gut auf Bäume. Der buschige Schwanz hilft beim Springen. Es frisst Nüsse und Samen. Im Herbst versteckt es Vorräte.",
+    "Das Eichhörnchen klettert flink an Bäumen hoch und springt von Ast zu Ast. Sein langer, buschiger Schwanz hilft ihm, das Gleichgewicht zu halten. Es frisst Nüsse, Samen, Knospen und Pilze. Im Herbst versteckt es viele Vorräte im Boden. Einige findet es nicht wieder, und daraus wachsen neue Bäume. Sein Nest heisst Kobel."],
+ f:"Das Eichhörnchen hält keinen Winterschlaf. Es ruht viel im Kobel und holt sich Futter aus seinen Verstecken."},
+{id:"maulwurf",name:"Maulwurf",art:"der Maulwurf",sym:"maulwurf",raum:["garten"],
+ s:{Grösse:"etwa 15 cm lang",Gewicht:"etwa 100 g",Nahrung:"Regenwürmer, Insektenlarven",Lebensraum:"Wiesen, Gärten, Felder",Aktiv:"am Tag und in der Nacht",Alter:"etwa 3 Jahre"},
+ m:{cm:15,art:"lang"},v:{titel:"Warum buddelt der Maulwurf?",reihe:"Anna und die wilden Tiere"},
+ t:["Der Maulwurf gräbt Gänge. Er lebt unter der Erde. Er frisst Würmer.",
+    "Der Maulwurf lebt unter der Erde. Mit seinen Händen gräbt er Gänge. Er sieht schlecht, aber er riecht gut. Er frisst Regenwürmer.",
+    "Der Maulwurf lebt fast immer unter der Erde. Mit seinen breiten Händen gräbt er lange Gänge wie mit Schaufeln. Die Erde schiebt er nach oben. So entstehen die Maulwurfshügel. Er sieht sehr schlecht, aber er riecht und fühlt sehr gut. Er frisst vor allem Regenwürmer und Insektenlarven. Jeden Tag braucht er fast so viel Futter, wie er selbst wiegt."],
+ f:"Der Maulwurf legt Vorräte an. Er beisst Regenwürmer, damit sie nicht wegkriechen können, und sammelt sie in einer Kammer."},
+{id:"fledermaus",name:"Fledermaus",sub:"Grosses Mausohr",art:"die Fledermaus",g:"🦇",raum:["luft","wald"],
+ s:{Grösse:"etwa 8 cm Körper, 40 cm mit offenen Flügeln",Gewicht:"etwa 30 g",Nahrung:"Käfer und andere Insekten",Lebensraum:"Dachböden, Höhlen, Wälder",Aktiv:"in der Nacht",Alter:"bis 20 Jahre"},
+ m:{cm:40,art:"spann"},v:{titel:"Mausohr, Abendsegler und andere Fledermäuse",reihe:"Anna und die wilden Tiere"},
+ t:["Die Fledermaus fliegt nachts. Sie frisst Käfer. Sie hängt kopfüber.",
+    "Die Fledermaus kann fliegen. Ihre Flügel sind aus Haut. Sie jagt nachts Käfer. Am Tag hängt sie kopfüber.",
+    "Fledermäuse sind die einzigen Säugetiere, die richtig fliegen können. Ihre Flügel sind aus dünner Haut zwischen den langen Fingern. Das Grosse Mausohr jagt in der Nacht Käfer. Es stösst Rufe aus und hört auf das Echo. So findet es sich auch im Dunkeln zurecht. Tagsüber hängt es kopfüber auf Dachböden oder in Höhlen. Im Winter hält es Winterschlaf."],
+ f:"Im Sommer leben manchmal Hunderte Mausohr-Weibchen zusammen auf einem Dachboden und ziehen dort ihre Jungen gross."},
+{id:"biene",name:"Honigbiene",art:"die Honigbiene",g:"🐝",raum:["garten","luft"],
+ s:{Grösse:"etwa 1,5 cm lang",Gewicht:"etwa 0,1 g",Nahrung:"Nektar und Blütenstaub",Lebensraum:"Wiesen, Gärten, Bienenstock",Aktiv:"am Tag",Alter:"Arbeiterin im Sommer etwa 6 Wochen"},
+ m:{cm:1.5,art:"lang"},v:{titel:"Imker Sepp und die Bienen",reihe:"Anna und die wilden Tiere"},
+ t:["Die Biene sammelt Nektar. Sie macht Honig. Sie lebt im Volk.",
+    "Bienen leben in einem grossen Volk. Die Königin legt Eier. Die Arbeiterinnen sammeln Nektar. Daraus machen sie Honig.",
+    "Honigbienen leben in einem grossen Volk mit vielen tausend Bienen. Jedes Volk hat eine Königin, die Eier legt. Die Arbeiterinnen fliegen von Blüte zu Blüte und sammeln Nektar und Blütenstaub. Dabei bestäuben sie die Pflanzen, damit Früchte wachsen können. Aus dem Nektar machen sie Honig. Mit einem Tanz zeigen sie den anderen Bienen, wo es gutes Futter gibt."],
+ f:"Ohne Bienen gäbe es viel weniger Äpfel, Kirschen und Erdbeeren."},
+{id:"kroete",name:"Erdkröte",art:"die Erdkröte",g:"🐸",raum:["wasser","garten"],
+ s:{Grösse:"etwa 10 cm lang",Gewicht:"etwa 50 g",Nahrung:"Würmer, Schnecken, Insekten",Lebensraum:"Wälder, Gärten, Teiche",Aktiv:"in der Nacht",Alter:"bis 10 Jahre"},
+ m:{cm:10,art:"lang"},v:{titel:"Wie viel Kröte steckt im Frosch?",reihe:"Anna und die wilden Tiere"},
+ t:["Die Kröte hat Warzen. Sie lebt am Teich. Sie frisst Würmer.",
+    "Die Kröte hat Warzen auf der Haut. Sie krabbelt meistens. Im Frühling wandert sie zum Teich. Dort legt sie Eier.",
+    "Die Erdkröte hat eine trockene Haut mit vielen Warzen. Sie krabbelt meistens, statt weit zu springen. Tagsüber versteckt sie sich. Nachts frisst sie Würmer, Schnecken und Insekten. Im Frühling wandern viele Kröten zu dem Teich, in dem sie selbst geschlüpft sind. Dort legen sie lange Laichschnüre. Aus den Eiern schlüpfen Kaulquappen."],
+ f:"So erkennst du den Unterschied: Frösche haben eine glatte, feuchte Haut und springen weit. Kröten haben eine warzige Haut und krabbeln."},
+{id:"fuchs",name:"Rotfuchs",art:"der Fuchs",g:"🦊",raum:["wald","garten"],
+ s:{Grösse:"etwa 110 cm mit Schwanz",Gewicht:"etwa 6 kg",Nahrung:"Mäuse, Beeren, Regenwürmer, Abfälle",Lebensraum:"Wald, Felder, auch Städte",Aktiv:"in der Dämmerung und Nacht",Alter:"meist 3 bis 5 Jahre"},
+ m:{cm:110,art:"lang"},v:{titel:"Fuchswelpen in Not!",reihe:"Pia und die wilden Tiere"},
+ t:["Der Fuchs hat rotes Fell. Er frisst Mäuse. Er wohnt im Bau.",
+    "Der Fuchs hat rotes Fell und einen buschigen Schwanz. Er hört sehr gut. Er frisst Mäuse und Beeren. Er wohnt in einem Bau.",
+    "Der Rotfuchs hat ein rotbraunes Fell und einen langen, buschigen Schwanz. Er hört so gut, dass er Mäuse sogar unter dem Schnee hören kann. Dann springt er hoch und landet mit den Pfoten auf der Maus. Er frisst fast alles: Mäuse, Beeren, Regenwürmer und Abfälle. Der Fuchs wohnt in einem Bau unter der Erde. Manche Füchse leben sogar mitten in der Stadt."],
+ f:"Junge Füchse heissen Welpen. Im Frühling spielen und raufen sie vor dem Bau."},
+{id:"dachs",name:"Dachs",art:"der Dachs",g:"🦡",raum:["wald"],
+ s:{Grösse:"etwa 90 cm mit Schwanz",Gewicht:"etwa 12 kg",Nahrung:"Regenwürmer, Wurzeln, Insekten, Beeren",Lebensraum:"Wälder",Aktiv:"in der Nacht",Alter:"bis 14 Jahre"},
+ m:{cm:90,art:"lang"},v:{titel:"Voll die frechen Dachse!",reihe:"Pia und die wilden Tiere"},
+ t:["Der Dachs gräbt einen Bau. Er hat Streifen am Kopf. Er frisst Würmer.",
+    "Der Dachs hat einen gestreiften Kopf. Er gräbt einen grossen Bau. Er ist sehr sauber. Nachts sucht er Würmer.",
+    "Der Dachs hat ein graues Fell und einen schwarz-weiss gestreiften Kopf. Mit seinen starken Krallen gräbt er einen grossen Bau mit vielen Gängen und Kammern. Manche Dachsbauten sind über hundert Jahre alt. Der Dachs ist sehr sauber. Sein Bett aus Gras und Laub lüftet er regelmässig. Nachts sucht er Regenwürmer, Wurzeln, Insekten und Beeren."],
+ f:"Der Dachs macht sein Geschäft in kleine Gruben ausserhalb des Baus, wie in eine Toilette."},
+{id:"wildkatze",name:"Wildkatze",art:"die Wildkatze",g:"🐈",raum:["wald"],
+ s:{Grösse:"etwa 85 cm mit Schwanz",Gewicht:"etwa 5 kg",Nahrung:"vor allem Mäuse",Lebensraum:"ruhige Wälder mit Wiesen",Aktiv:"in der Dämmerung und Nacht",Alter:"bis 10 Jahre"},
+ m:{cm:85,art:"lang"},v:{titel:"Wie wild ist die Wildkatze?",reihe:"Pia und die wilden Tiere"},
+ t:["Die Wildkatze lebt im Wald. Sie ist scheu. Sie jagt Mäuse.",
+    "Die Wildkatze sieht aus wie eine Hauskatze. Ihr Schwanz hat schwarze Ringe. Sie ist sehr scheu. Sie jagt Mäuse.",
+    "Die Wildkatze sieht aus wie eine getigerte Hauskatze, aber sie ist ein echtes Wildtier. Ihr Schwanz ist buschig, hat schwarze Ringe und ein stumpfes, schwarzes Ende. Sie lebt in ruhigen Wäldern und ist sehr scheu. Am liebsten jagt sie Mäuse am Waldrand und auf Wiesen. Ihre Jungen bekommt sie in Baumhöhlen oder unter Wurzeln."],
+ f:"Auf dem Rücken hat die Wildkatze einen dunklen Strich. Er heisst Aalstrich."},
+{id:"luchs",name:"Luchs",art:"der Luchs",g:"🐈",raum:["wald","berge"],
+ s:{Grösse:"etwa 120 cm mit Schwanz",Gewicht:"etwa 20 kg",Nahrung:"Rehe, Gämsen, Füchse, Hasen",Lebensraum:"grosse Wälder im Jura und in den Alpen",Aktiv:"in der Dämmerung",Alter:"bis 15 Jahre"},
+ m:{cm:120,art:"lang"},v:{titel:"Im Revier der Luchse",reihe:"Pia und die wilden Tiere"},
+ t:["Der Luchs ist eine Katze. Er hat Pinsel-Ohren. Er jagt Rehe.",
+    "Der Luchs ist eine grosse Wildkatze. Er hat Pinsel an den Ohren. Er jagt Rehe. Er lebt allein im Wald.",
+    "Der Luchs ist die grösste Wildkatze in der Schweiz und in Deutschland. Er hat Haarpinsel an den Ohren und einen kurzen Stummelschwanz. Mit seinen grossen Pfoten läuft er gut über Schnee. Er schleicht sich leise an Rehe und Gämsen an. Der Luchs lebt allein in einem grossen Revier im Wald. Er ist so scheu, dass man ihn fast nie sieht."],
+ f:"Früher war der Luchs in der Schweiz ausgestorben. Seit etwa 1970 lebt er wieder im Jura und in den Alpen."},
+{id:"kreuzotter",name:"Kreuzotter",art:"die Kreuzotter",g:"🐍",raum:["berge","wasser"],
+ s:{Grösse:"etwa 60 cm lang",Gewicht:"etwa 150 g",Nahrung:"Mäuse, Eidechsen, Frösche",Lebensraum:"Moore, Bergwiesen, sonnige Waldränder",Aktiv:"am Tag",Alter:"bis 15 Jahre"},
+ m:{cm:60,art:"lang"},v:{titel:"Der Tanz der Kreuzotter",reihe:"Pia und die wilden Tiere"},
+ t:["Die Kreuzotter ist eine Schlange. Sie hat ein Zickzack-Muster. Lass sie in Ruhe!",
+    "Die Kreuzotter ist eine Giftschlange. Sie hat ein Zickzackband. Sie liegt gern in der Sonne. Sie ist scheu und flüchtet.",
+    "Die Kreuzotter ist eine Giftschlange. Auf dem Rücken hat sie ein dunkles Zickzackband. Sie lebt in Mooren, auf Bergwiesen und an sonnigen Waldrändern. Am Morgen wärmt sie sich in der Sonne auf. Sie frisst Mäuse, Eidechsen und Frösche. Die Kreuzotter ist scheu und flüchtet, wenn Menschen kommen. Sie beisst nur, wenn man sie anfasst oder auf sie tritt."],
+ f:"Im Frühling kämpfen die Männchen miteinander. Sie richten sich auf und drücken sich gegenseitig zu Boden. Das sieht aus wie ein Tanz."},
+{id:"habichtskauz",name:"Habichtskauz",art:"der Habichtskauz",g:"🦉",raum:["wald","luft"],
+ s:{Grösse:"etwa 60 cm gross, 120 cm mit offenen Flügeln",Gewicht:"etwa 1 kg",Nahrung:"vor allem Mäuse",Lebensraum:"alte Wälder mit dicken Bäumen",Aktiv:"in der Dämmerung und Nacht",Alter:"bis 20 Jahre"},
+ m:{cm:60,art:"hoch"},v:{titel:"Der Habichtskauz ist wieder da",reihe:"Pia und die wilden Tiere"},
+ t:["Der Kauz ist eine Eule. Er jagt nachts. Er frisst Mäuse.",
+    "Der Habichtskauz ist eine grosse Eule. Er lebt in alten Wäldern. Nachts jagt er Mäuse. Er fliegt ganz leise.",
+    "Der Habichtskauz ist eine grosse Eule mit einem runden Kopf und dunklen Augen. Er lebt in alten Wäldern mit vielen dicken Bäumen. In der Nacht und in der Dämmerung jagt er Mäuse. Er fliegt fast lautlos, weil seine Federn ganz weich sind. In Deutschland war er ausgestorben. Dank Schutzprojekten lebt er dort heute wieder."],
+ f:"Eulen können ihren Kopf sehr weit drehen, fast bis nach hinten."},
+{id:"wolf",name:"Wolf",art:"der Wolf",g:"🐺",raum:["wald","berge"],
+ s:{Grösse:"etwa 160 cm mit Schwanz, 75 cm hoch",Gewicht:"etwa 40 kg",Nahrung:"Rehe, Hirsche, Wildschweine",Lebensraum:"Wälder und Berge",Aktiv:"in der Dämmerung und Nacht",Alter:"bis 10 Jahre"},
+ m:{cm:160,art:"lang"},v:{titel:"Spaziergang mit dem Wolf",reihe:"Anna und die wilde Herde"},
+ t:["Der Wolf lebt im Rudel. Er jagt Rehe. Er kann heulen.",
+    "Der Wolf lebt im Rudel. Das Rudel ist eine Familie. Zusammen jagen sie Rehe. Wölfe heulen, um sich zu rufen.",
+    "Der Wolf lebt in einem Rudel. Das Rudel ist eine Familie aus den Eltern und ihren Jungen. Gemeinsam jagen sie Rehe, Hirsche und Wildschweine. Wölfe können viele Kilometer am Tag laufen. Mit Heulen verständigen sie sich über weite Strecken. Seit einigen Jahren leben wieder Wölfe in der Schweiz und in Deutschland."],
+ f:"Alle Hunde stammen vom Wolf ab."},
+{id:"kranich",name:"Kranich",art:"der Kranich",sym:"kranich",raum:["wasser","luft"],
+ s:{Grösse:"etwa 120 cm gross, 220 cm mit offenen Flügeln",Gewicht:"etwa 6 kg",Nahrung:"Körner, Würmer, Insekten, kleine Frösche",Lebensraum:"Moore, feuchte Wiesen, Felder",Aktiv:"am Tag",Alter:"bis 20 Jahre"},
+ m:{cm:120,art:"hoch"},v:{titel:"Auf der Suche nach dem Glücksvogel",reihe:"Anna im Land der tausend Seen"},
+ t:["Der Kranich ist gross. Er hat lange Beine. Er fliegt weit weg.",
+    "Der Kranich ist ein grosser Vogel. Er hat lange Beine. Im Herbst fliegt er in den Süden. Er ruft laut wie eine Trompete.",
+    "Der Kranich ist ein grosser grauer Vogel mit langen Beinen und einem roten Fleck am Kopf. Er lebt in Mooren und auf feuchten Wiesen. Er frisst Körner, Würmer, Insekten und kleine Frösche. Im Herbst fliegen die Kraniche in den warmen Süden. Dabei fliegen sie in einer Keil-Form, wie ein grosses V. Mit ihren lauten Trompeten-Rufen bleiben sie in Kontakt."],
+ f:"Im Frühling tanzen die Kraniche. Sie springen hoch, schlagen mit den Flügeln und verbeugen sich voreinander."},
+{id:"wanderfalke",name:"Wanderfalke",art:"der Wanderfalke",g:"🦅",raum:["luft","berge"],
+ s:{Grösse:"etwa 45 cm gross, 100 cm mit offenen Flügeln",Gewicht:"etwa 1 kg",Nahrung:"andere Vögel, zum Beispiel Tauben",Lebensraum:"Felsen, Kirchtürme, Hochhäuser",Aktiv:"am Tag",Alter:"bis 15 Jahre"},
+ m:{cm:100,art:"spann"},v:{titel:"Der Falkner und seine Greifvögel",reihe:"Anna und die wilden Tiere"},
+ t:["Der Falke kann fliegen. Er ist sehr schnell. Er jagt Vögel.",
+    "Der Falke ist ein Greifvogel. Er jagt Vögel in der Luft. Im Sturzflug ist er sehr schnell. Er wohnt an hohen Felsen.",
+    "Der Wanderfalke ist ein Greifvogel mit spitzen Flügeln. Er brütet an hohen Felsen und manchmal auf Kirchtürmen oder Hochhäusern. Er jagt andere Vögel in der Luft, zum Beispiel Tauben. Dazu stürzt er sich mit angelegten Flügeln aus grosser Höhe hinab. So schnell wie er ist kein anderes Tier der Welt. Falkner trainieren Falken und andere Greifvögel."],
+ f:"Im Sturzflug wird der Wanderfalke über 300 Kilometer pro Stunde schnell. Das ist schneller als ein Schnellzug."},
+{id:"waschbaer",name:"Waschbär",art:"der Waschbär",g:"🦝",raum:["wald","wasser"],neu:true,
+ s:{Grösse:"etwa 85 cm mit Schwanz",Gewicht:"etwa 7 kg",Nahrung:"fast alles: Früchte, Frösche, Würmer, Abfälle",Lebensraum:"Wälder am Wasser, auch Städte",Aktiv:"in der Nacht",Alter:"meist 2 bis 5 Jahre"},
+ m:{cm:85,art:"lang"},v:{titel:"Ein neuer Räuber in der Wildnis",reihe:"Anna im Land der tausend Seen"},
+ t:["Der Waschbär hat eine Maske. Er sucht Futter im Wasser. Er frisst fast alles.",
+    "Der Waschbär hat eine schwarze Maske. Er kommt aus Amerika. Er tastet im Wasser nach Futter. Er frisst fast alles.",
+    "Der Waschbär hat eine schwarze Maske um die Augen und einen geringelten Schwanz. Eigentlich kommt er aus Nordamerika. Vor vielen Jahren haben Menschen ihn nach Europa gebracht. Nun lebt er auch bei uns. Mit seinen geschickten Pfoten tastet er im Wasser nach Futter. Das sieht aus, als würde er es waschen. Er frisst fast alles, auch Abfälle in der Stadt."],
+ f:"Der Waschbär kann mit seinen Pfoten fast so gut tasten wie wir mit den Fingern. Manchmal öffnet er sogar Mülltonnen."},
+{id:"wisent",name:"Wisent",art:"der Wisent",g:"🦬",raum:["wald"],
+ s:{Grösse:"bis 3 m lang, bis 190 cm hoch",Gewicht:"bis 700 kg",Nahrung:"Gras, Blätter, Rinde, Zweige",Lebensraum:"Wälder mit Lichtungen",Aktiv:"am Tag",Alter:"bis 20 Jahre"},
+ m:{cm:180,art:"hoch"},v:{titel:"Wo weidet der Wisent?",reihe:"Anna und die wilden Tiere"},
+ t:["Der Wisent ist sehr gross. Er lebt im Wald. Er frisst Gras.",
+    "Der Wisent ist ein riesiges Rind. Er lebt in einer Herde im Wald. Er frisst Gras und Blätter. Fast wäre er ausgestorben.",
+    "Der Wisent ist das grösste Landtier in Europa. Er sieht aus wie ein mächtiges Rind mit einem hohen Buckel und einem zotteligen Fell. Er lebt in einer Herde im Wald. Er frisst Gras, Blätter, Rinde und Zweige. Vor rund 100 Jahren gab es keine wilden Wisente mehr. Nur einige lebten noch in Zoos. Heute leben wieder einige Herden in der freien Natur."],
+ f:"Ein grosser Wisent-Bulle wiegt so viel wie etwa 25 Kinder zusammen."}
+];
+
+const state = {filter:"alle", level:3, kidH:125};
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const glyph = t => t.sym ? `<svg viewBox="0 0 100 100" aria-hidden="true"><use href="#sym-${t.sym}"/></svg>` : `<span aria-hidden="true">${t.g}</span>`;
+const bg = t => `var(--${t.raum[0]})`;
+
+function renderHome(){
+  stopSpeak();
+  const list = TIERE.filter(t => state.filter==="alle" || t.raum.includes(state.filter));
+  app.innerHTML = `
+    <a class="back" href="../index.html">← Pausenplatz</a>
+    <header class="intro">
+      <h1>Tierbibliothek</h1>
+      <p>Wilde Tiere aus unserer Heimat. Wähle ein Tier und werde zum Tier-Profi!</p>
+    </header>
+    <div class="chips" role="group" aria-label="Lebensraum wählen">
+      <button class="chip" data-f="alle" aria-pressed="${state.filter==="alle"}">Alle Tiere</button>
+      ${Object.entries(RAUM).map(([k,r])=>`<button class="chip" data-f="${k}" aria-pressed="${state.filter===k}">${r.label}</button>`).join("")}
+    </div>
+    <div class="grid">
+      ${list.map(t=>`<button class="card" data-id="${t.id}">
+        <span class="blob" style="background:${bg(t)}">${glyph(t)}</span>
+        <b>${esc(t.name)}</b><small>${t.raum.map(r=>RAUM[r].label).join(" · ")}</small>
+      </button>`).join("")}
+    </div>
+    <footer>Die Texte sind eigene, kindgerechte Zusammenfassungen. Die Videos der Sendungen von BR/KiKA findest du über den Knopf «Folge anschauen» in der ARD Mediathek.</footer>`;
+  app.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{state.filter=b.dataset.f;renderHome();});
+  app.querySelectorAll(".card").forEach(b=>b.onclick=()=>{location.hash=b.dataset.id;});
+}
+
+function vergleichSatz(t){
+  const m=t.m.cm, k=state.kidH, r=m/k;
+  const adj = t.m.art==="lang"?"lang":t.m.art==="hoch"?"hoch":"breit mit offenen Flügeln";
+  const A = cap(t.art);
+  if(r<0.6){ const n=Math.round(k/m); return `Du bist etwa ${n}-mal so gross, wie ${t.art} ${adj} ist.`; }
+  if(r<0.9) return `${A} ist fast so ${adj}, wie du gross bist.`;
+  if(r<=1.1) return `${A} ist ungefähr so ${adj}, wie du gross bist!`;
+  if(r<1.75) return `${A} ist ${adj==="lang"?"länger":adj==="hoch"?"höher":"breiter mit offenen Flügeln"}, als du gross bist.`;
+  return `${A} ist etwa ${Math.round(r)}-mal so ${adj}, wie du gross bist.`;
+}
+
+function scene(t){
+  const W=360,G=212,k=state.kidH,m=t.m.cm;
+  const kidW=k*0.32;
+  const horiz = t.m.art==="hoch"? m*0.9 : m;
+  const vert  = t.m.art==="hoch"? m : t.m.art==="lang"? m*0.7 : m*0.45;
+  const sc=Math.min(170/Math.max(k,vert), (W-80)/(kidW+horiz));
+  const h=k*sc, kx=36+kidW*sc/2;
+  const kid=`<g fill="var(--kid)">
+    <circle cx="${kx}" cy="${G-h*0.9}" r="${h*0.085}"/>
+    <rect x="${kx-h*0.11}" y="${G-h*0.79}" width="${h*0.22}" height="${h*0.36}" rx="${h*0.06}"/>
+    <rect x="${kx-h*0.16}" y="${G-h*0.77}" width="${h*0.05}" height="${h*0.3}" rx="${h*0.025}"/>
+    <rect x="${kx+h*0.11}" y="${G-h*0.77}" width="${h*0.05}" height="${h*0.3}" rx="${h*0.025}"/>
+    <rect x="${kx-h*0.09}" y="${G-h*0.46}" width="${h*0.075}" height="${h*0.46}" rx="${h*0.03}"/>
+    <rect x="${kx+h*0.015}" y="${G-h*0.46}" width="${h*0.075}" height="${h*0.46}" rx="${h*0.03}"/></g>
+    <line x1="14" y1="${G}" x2="14" y2="${G-h}" stroke="var(--ink-soft)" stroke-width="1.5"/>
+    <line x1="10" y1="${G-h}" x2="18" y2="${G-h}" stroke="var(--ink-soft)" stroke-width="1.5"/>
+    <text x="22" y="${G-h-6}" font-size="12">du: ${k} cm</text>`;
+  const ax=36+kidW*sc+30, s=m*sc;
+  let animal="", tiny=s<12;
+  const draw=(x,size)=> t.sym
+    ? `<use href="#sym-${t.sym}" x="${x}" y="${G-size}" width="${size}" height="${size}"/>`
+    : `<text x="${x}" y="${G-size*0.12}" font-size="${t.m.art==="hoch"?size:size/1.12}">${t.g}</text>`;
+  animal = draw(ax, Math.max(s,3));
+  let dim="";
+  if(t.m.art==="hoch"){
+    dim=`<line x1="${ax+s*0.95+8}" y1="${G}" x2="${ax+s*0.95+8}" y2="${G-s}" stroke="var(--accent)" stroke-width="2"/>
+         <text x="${Math.min(ax+s*0.95+14,W-50)}" y="${G-s/2}" font-size="12">${m} cm</text>`;
+  } else if(!tiny){
+    const y = G - (t.m.art==="lang"? s*0.8 : s*0.75) - 8;
+    dim=`<line x1="${ax}" y1="${y}" x2="${ax+s}" y2="${y}" stroke="var(--accent)" stroke-width="2"/>
+         <line x1="${ax}" y1="${y-4}" x2="${ax}" y2="${y+4}" stroke="var(--accent)" stroke-width="2"/>
+         <line x1="${ax+s}" y1="${y-4}" x2="${ax+s}" y2="${y+4}" stroke="var(--accent)" stroke-width="2"/>
+         <text x="${ax}" y="${y-6}" font-size="12">${String(m).replace(".",",")} cm</text>`;
+  }
+  let zoom="";
+  if(tiny){
+    const zx=Math.min(ax+60,W-90);
+    zoom=`<circle cx="${ax+s/2}" cy="${G-s/2}" r="${Math.max(s,6)+4}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <line x1="${ax+s/2+10}" y1="${G-12}" x2="${zx-6}" y2="${G-50}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <circle cx="${zx+30}" cy="${G-70}" r="38" fill="var(--paper)" stroke="var(--accent)" stroke-width="2"/>
+      ${t.sym?`<use href="#sym-${t.sym}" x="${zx+6}" y="${G-94}" width="48" height="48"/>`:`<text x="${zx+8}" y="${G-56}" font-size="40">${t.g}</text>`}
+      <text x="${zx}" y="${G-118}" font-size="12">vergrössert · ${String(m).replace(".",",")} cm</text>`;
+  }
+  return `<svg class="scene" viewBox="0 0 ${W} 230" role="img" aria-label="Grössenvergleich: Kind ${k} cm, ${esc(t.name)} ${m} cm">
+    <rect x="0" y="${G}" width="${W}" height="18" fill="var(--ground)" rx="4"/>
+    ${kid}${animal}${dim}${zoom}</svg>`;
+}
+
+function renderTier(t){
+  stopSpeak();
+  app.innerHTML = `
+    <button class="back" id="back">← Alle Tiere</button>
+    <div class="head">
+      <span class="blob" style="background:${bg(t)}">${glyph(t)}</span>
+      <div class="head-txt">
+        <h1>${esc(t.name)}</h1>
+        ${t.sub?`<span class="sub">${esc(t.sub)}</span>`:""}
+        <div class="tags">${t.raum.map(r=>`<span class="tag">${RAUM[r].label}</span>`).join("")}${t.neu?`<span class="tag neu">zugewandert</span>`:""}</div>
+        <a class="video" href="${ARD(t.v.titel)}" target="_blank" rel="noopener"><span class="play"></span>Folge anschauen</a>
+        <span class="video-note">«${esc(t.v.titel)}» aus ${esc(t.v.reihe)}</span>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="col">
+        <section class="panel" aria-labelledby="h-text">
+          <h2 id="h-text">Das weiss ich über ${esc(t.art)}</h2>
+          <div class="slider">
+            <label for="lvl">Text: einfacher oder genauer?</label>
+            <input type="range" id="lvl" min="1" max="3" step="1" value="${state.level}">
+            <div class="ticks"><span data-l="1">Ganz einfach</span><span data-l="2">Einfach</span><span data-l="3">Genau</span></div>
+          </div>
+          <p class="reader" id="reader"></p>
+          <div class="readbar" id="readbar" hidden>
+            <button class="read" id="read">Vorlesen</button>
+            <label for="voice" class="vlabel">Stimme</label>
+            <select id="voice"></select>
+          </div>
+        </section>
+        <section class="panel" aria-labelledby="h-gr">
+          <h2 id="h-gr">Wie gross im Vergleich zu dir?</h2>
+          <div id="scene"></div>
+          <p class="vergleich" id="satz"></p>
+          <div class="me"><label for="kidh">Ich bin</label><input type="number" id="kidh" min="80" max="200" value="${state.kidH}"> cm gross</div>
+        </section>
+      </div>
+      <div class="col">
+        <section class="panel" aria-labelledby="h-st">
+          <h2 id="h-st">Steckbrief</h2>
+          <dl class="steck">${Object.entries(t.s).map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+        </section>
+        <section class="fakt"><h3>Wusstest du?</h3><p>${esc(t.f)}</p></section>
+      </div>
+    </div>`;
+  document.getElementById("back").onclick=()=>{history.length>1&&location.hash?location.hash="":renderHome();};
+  const lvl=document.getElementById("lvl"), reader=document.getElementById("reader");
+  const upd=()=>{
+    state.level=+lvl.value; reader.textContent=t.t[state.level-1]; reader.className="reader l"+state.level;
+    app.querySelectorAll(".ticks span").forEach(s=>s.classList.toggle("on",+s.dataset.l===state.level));
+    stopSpeak();
+  };
+  lvl.oninput=upd; upd();
+  const drawScene=()=>{document.getElementById("scene").innerHTML=scene(t);document.getElementById("satz").textContent=vergleichSatz(t);};
+  drawScene();
+  document.getElementById("kidh").oninput=e=>{const v=+e.target.value;if(v>=80&&v<=200){state.kidH=v;drawScene();}};
+  setupVoice(()=>t.name+". "+reader.textContent);
+  window.scrollTo(0,0);
+}
+
+/* Vorlesen: wählt automatisch die angenehmste deutsche Stimme des Geräts */
+const GOOD=["natural","neural","online","premium","enhanced","verbessert","google deutsch","katja","leni","seraphina","amala","vicki","anna","petra","helena","marlene"];
+const BAD=["compact","espeak","eloquence","grandma","grandpa","flo","rocko","reed","sandy","shelley","eddy"];
+function scoreVoice(v){
+  const n=(v.name||"").toLowerCase(); let sc=0;
+  if(v.lang==="de-CH")sc+=3; else if((v.lang||"").startsWith("de"))sc+=2; else return -99;
+  GOOD.forEach((g,i)=>{if(n.includes(g))sc+= i<6?6:3;});
+  BAD.forEach(b=>{if(n.includes(b))sc-=6;});
+  if(!v.localService)sc+=1;
+  return sc;
+}
+function germanVoices(){try{return speechSynthesis.getVoices().filter(v=>(v.lang||"").startsWith("de")).sort((a,b)=>scoreVoice(b)-scoreVoice(a));}catch(e){return [];}}
+let chosenVoice=null;
+try{chosenVoice=localStorage.getItem("tb-voice");}catch(e){}
+function setupVoice(getText){
+  if(!("speechSynthesis" in window))return;
+  const bar=document.getElementById("readbar"), rb=document.getElementById("read"), sel=document.getElementById("voice");
+  bar.hidden=false;
+  const fill=()=>{
+    const vs=germanVoices();
+    sel.innerHTML=vs.map(v=>`<option value="${esc(v.name)}">${esc(v.name.replace(/^Microsoft |^Google /,"").replace(/ - .*$/,""))}</option>`).join("");
+    sel.hidden=vs.length<2; document.querySelector(".vlabel").hidden=vs.length<2;
+    if(chosenVoice&&vs.some(v=>v.name===chosenVoice))sel.value=chosenVoice; else if(vs[0])sel.value=vs[0].name;
+  };
+  fill(); speechSynthesis.onvoiceschanged=fill;
+  sel.onchange=()=>{chosenVoice=sel.value;try{localStorage.setItem("tb-voice",chosenVoice);}catch(e){} stopSpeak();};
+  rb.onclick=()=>{
+    try{
+      if(speechSynthesis.speaking){stopSpeak();return;}
+      const u=new SpeechSynthesisUtterance(getText());
+      const v=germanVoices().find(x=>x.name===sel.value)||germanVoices()[0];
+      if(v){u.voice=v;u.lang=v.lang;}else u.lang="de-DE";
+      u.rate=state.level===1?0.82:0.9; u.pitch=1.08;
+      u.onend=()=>{rb.textContent="Vorlesen";};
+      speechSynthesis.speak(u); rb.textContent="Stopp";
+    }catch(e){bar.hidden=true;}
+  };
+}
+function stopSpeak(){try{if("speechSynthesis" in window)speechSynthesis.cancel();}catch(e){} const rb=document.getElementById("read"); if(rb)rb.textContent="Vorlesen";}
+
+function route(){
+  const id=location.hash.slice(1); const t=TIERE.find(x=>x.id===id);
+  t?renderTier(t):renderHome();
+}
+window.addEventListener("hashchange",route);
+route();
+</script>
+
+</body>
+</html>

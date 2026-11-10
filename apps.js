@@ -23,5 +23,11 @@ window.APPS = [
     titel:  "Einmaleins-Heft",
     uebt:   "Kleines und grosses 1×1, Rechnen bis 10 000",
     klasse: "2. bis 4. Klasse"
+  },
+  {
+    datei:  "apps/tierbibliothek.html",
+    titel:  "Tierbibliothek",
+    uebt:   "Wissen über heimische Wildtiere, mit Videos",
+    klasse: "2. Klasse"
   }
 ];
