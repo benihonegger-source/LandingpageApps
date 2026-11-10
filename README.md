@@ -28,3 +28,12 @@ Sehen die Kinder noch die alte Version: Seite einmal neu laden.
    z.B. `rechentrainer-2.html`.
 2. In `apps.js` einen Eintrag kopieren und anpassen (Komma zwischen den Einträgen nicht vergessen).
    Die Reihenfolge in der Liste ist die Reihenfolge der Felder.
+
+## Datenschutz
+
+Die Startseite und alle Apps bauen keine Verbindungen ins Internet auf. Die Schriften sind direkt
+in den HTML-Dateien eingebettet (alle unter SIL Open Font License), und jede Seite hat eine
+Sicherheitsregel (`Content-Security-Policy`), die Anfragen nach aussen sperrt.
+
+Beim Einbauen einer neuen App darauf achten, dass sie keine Schriften oder Skripte von fremden
+Adressen lädt (z.B. `fonts.googleapis.com`).
