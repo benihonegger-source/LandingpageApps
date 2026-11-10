@@ -67,6 +67,8 @@ input{font:inherit;-webkit-user-select:text;user-select:text}
 .savebtns{display:flex;flex-wrap:wrap;gap:12px}
 .sbtn{padding:14px 20px;font-weight:900;font-size:1.1rem;--b:#fff7ea;--sh:#ead7b7}
 .sbtn.green{--b:var(--green);--sh:var(--green-d);color:#fff}
+.pausenplatz{display:inline-flex;align-items:center;gap:8px;min-height:62px;padding:0 20px;font-weight:900;font-size:1.1rem;color:var(--ink);text-decoration:none}
+.pausenplatz:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
 .privacy{text-align:center;color:var(--muted);font-weight:700;font-size:.9rem;margin-top:18px}
 
 /* Übungsseite */
@@ -419,6 +421,7 @@ function render(){
 function homeV(){
   return `
   <header class="topbar">
+    <a class="btn pausenplatz" href="../index.html" aria-label="Zurück zum Pausenplatz"><span aria-hidden="true">⬅</span> Pausenplatz</a>
     <div class="logo"><div class="face">🦊</div><div><div class="t1">Rechentrainer</div><div class="t2">Zahlenraum bis 20</div></div></div>
     <div class="spacer"></div>
     <div class="pill" aria-label="Sterne">⭐ <b>${st.stars}</b></div>

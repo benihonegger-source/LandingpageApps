@@ -94,6 +94,13 @@ header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-be
 .title{margin:0;font-family:var(--font-display);font-weight:var(--font-black);font-size:var(--text-3xl);line-height:var(--leading-tight);letter-spacing:-.02em}
 .title em{font-style:normal;color:var(--pen);font-family:var(--font-hand);font-weight:var(--font-bold);font-size:var(--text-4xl);display:inline-block;transform:rotate(-4deg) translateY(4px);margin-left:4px}
 .kicker{font-size:var(--text-sm);color:var(--muted);margin:0 0 4px;font-weight:var(--font-bold);letter-spacing:.06em;text-transform:uppercase}
+.zurueck{display:inline-flex;align-items:center;gap:6px;min-height:44px;margin-bottom:var(--gap-tight);padding:0 var(--gap) 0 var(--gap-tight);
+  border:2px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;
+  font-family:var(--font-display);font-weight:var(--font-medium);font-size:var(--text-sm);transition:background .15s}
+.zurueck:hover{background:var(--ink-soft)}
+.zurueck:active{transform:translateY(2px)}
+.zurueck svg{width:1.1em;height:1.1em}
+@media print{.zurueck{display:none}}
 
 /* Schieber klein / gross */
 .stage-switch{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
@@ -351,6 +358,7 @@ footer{margin-top:var(--gap-air);font-size:var(--text-sm);color:var(--muted);max
 <div class="app">
   <header>
     <div>
+      <a class="zurueck" href="../index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Zurück zum Pausenplatz</a>
       <p class="kicker">Rechentraining</p>
       <h1 class="title">Einmaleins-<em>Heft</em></h1>
     </div>
