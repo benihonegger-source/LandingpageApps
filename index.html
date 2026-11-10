@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pausenplatz Lernspiele</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Rechenspiele für die Unterstufe. Tipp auf ein Feld und spiel los.">
+<meta name="theme-color" content="#2b3036">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Caveat:wght@700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,600..900,100,1&display=swap" rel="stylesheet">
+<style>
+/* Layout: ein Hüpfspiel aus Kreide auf Asphalt.
+   Überschrift links, das Spielfeld bewusst nach rechts versetzt und leicht schräg (gebrochenes Raster). */
+:root{
+  color-scheme: dark;
+
+  /* ---------- Typografie: modulare Skala 1.25 ab --text-base ---------- */
+  --text-base: 1.125rem;
+  --text-xs:  calc(var(--text-base) / 1.5625);
+  --text-sm:  calc(var(--text-base) / 1.25);
+  --text-lg:  calc(var(--text-base) * 1.25);
+  --text-xl:  calc(var(--text-base) * 1.5625);
+  --text-2xl: calc(var(--text-base) * 1.953);
+  --text-3xl: calc(var(--text-base) * 2.441);
+  --text-4xl: calc(var(--text-base) * 3.052);
+  --text-5xl: calc(var(--text-base) * 3.815);
+  --text-6xl: calc(var(--text-base) * 4.768);
+
+  --font-regular: 400;
+  --font-bold: 700;
+  --font-display-weight: 800;
+  --font-black: 900;
+
+  --leading-body: 1.5;
+  --leading-heading: 1.2;
+  --leading-tight: 1;
+
+  --font-display: "Fraunces", "Georgia", "Times New Roman", serif;
+  --font-text: "Atkinson Hyperlegible", "Verdana", system-ui, sans-serif;
+  --font-chalk: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+
+  /* ---------- Farben: Asphalt (Haupt), Kreidegelb (Akzent), Kreideweiss (Neutral) ---------- */
+  --asphalt: #2b3036;
+  --asphalt-hell: #353b42;
+  --kreide: #f4f1e8;
+  --kreide-matt: #b7bdc4;
+  --kreide-hauch: rgba(244, 241, 232, .07);
+  --gelb: #f5d547;
+  --gelb-dunkel: #2a2410;
+
+  /* ---------- Raum: bewusst ungleich ---------- */
+  --gap-xs: .375rem;
+  --gap-s: .75rem;
+  --gap: 1.25rem;
+  --gap-l: 2.5rem;
+  --gap-xl: 4.5rem;
+  --strich: 4px;
+}
+
+*{box-sizing:border-box}
+html{font-size:100%}
+body{
+  margin:0;
+  min-height:100%;
+  background-color:var(--asphalt);
+  /* Asphaltkörnung: feines Rauschen als Inline-Grafik */
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  color:var(--kreide);
+  font-family:var(--font-text);
+  font-size:var(--text-base);
+  line-height:var(--leading-body);
+  font-weight:var(--font-regular);
+  -webkit-tap-highlight-color:transparent;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.kreidefilter{position:absolute;width:0;height:0}
+
+.seite{
+  max-width:72rem;
+  margin:0 auto;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:var(--gap-l) var(--gap-xl);
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:var(--gap-l);
+}
+
+/* ---------- Kopf ---------- */
+.kopf{display:grid;gap:var(--gap-s);align-content:start;min-width:0}
+.ort{
+  margin:0;
+  font-family:var(--font-chalk);
+  font-weight:var(--font-bold);
+  font-size:var(--text-2xl);
+  line-height:var(--leading-tight);
+  color:var(--gelb);
+  transform:rotate(-3deg);
+  transform-origin:left center;
+  width:max-content;
+}
+h1{
+  margin:0;
+  font-family:var(--font-display);
+  font-weight:var(--font-black);
+  font-variation-settings:"SOFT" 100, "WONK" 1;
+  font-size:var(--text-5xl);
+  line-height:var(--leading-tight);
+  letter-spacing:-.025em;
+  text-wrap:balance;
+}
+h1 .zeile{display:block}
+h1 .feldwort{color:var(--gelb)}
+.anleitung{
+  margin:0;
+  max-width:26ch;
+  font-size:var(--text-lg);
+  line-height:var(--leading-heading);
+  color:var(--kreide);
+}
+
+/* ---------- Spielfeld ---------- */
+.spielfeld{
+  --breite:min(100%, 30rem);
+  width:var(--breite);
+  justify-self:end;
+  margin-right:2%;
+  transform:rotate(-1.5deg);
+  display:grid;
+  gap:0;
+  min-width:0;
+}
+.startlinie{
+  display:flex;align-items:center;gap:var(--gap-s);
+  margin:0 0 var(--gap);
+  font-family:var(--font-chalk);
+  font-weight:var(--font-bold);
+  font-size:var(--text-xl);
+  line-height:var(--leading-tight);
+  color:var(--kreide-matt);
+}
+.startlinie::after{
+  content:"";flex:1;height:var(--strich);border-radius:2px;
+  background:var(--kreide-matt);filter:url(#kreide);opacity:.8;
+}
+.reihe{display:flex;justify-content:center;margin-top:calc(var(--strich) * -1)}
+.reihe.einzeln .feld{width:66%}
+.reihe.paar .feld{width:50%}
+.reihe.paar .feld + .feld{margin-left:calc(var(--strich) * -1)}
+
+.feld{
+  position:relative;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:start;
+  column-gap:var(--gap-s);
+  row-gap:var(--gap-xs);
+  min-height:10.5rem;
+  padding:var(--gap) var(--gap) var(--gap) var(--gap-s);
+  color:inherit;
+  text-decoration:none;
+  isolation:isolate;
+}
+/* Kreiderahmen */
+.feld::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  border:var(--strich) solid var(--kreide);
+  border-radius:3px;
+  filter:url(#kreide);
+  animation:zeichnen .55s ease-out both;
+  animation-delay:calc(var(--i, 0) * 90ms);
+}
+@keyframes zeichnen{from{clip-path:inset(0 100% 100% 0)}to{clip-path:inset(0 0 0 0)}}
+
+.nummer{
+  grid-row:1 / span 3;
+  font-family:var(--font-chalk);
+  font-weight:var(--font-bold);
+  font-size:var(--text-6xl);
+  line-height:.8;
+  color:var(--gelb);
+  min-width:1.1ch;
+  text-align:center;
+}
+.titel{
+  margin:0;
+  font-family:var(--font-display);
+  font-weight:var(--font-display-weight);
+  font-variation-settings:"SOFT" 100, "WONK" 0;
+  font-size:var(--text-xl);
+  line-height:var(--leading-heading);
+  hyphens:auto;
+  overflow-wrap:anywhere;
+}
+.uebt{margin:0;font-size:var(--text-sm);line-height:var(--leading-heading);color:var(--kreide)}
+.klasse{
+  justify-self:start;
+  margin-top:var(--gap-xs);
+  padding:.15em .6em;
+  border-radius:999px;
+  background:var(--gelb);
+  color:var(--gelb-dunkel);
+  font-size:var(--text-xs);
+  font-weight:var(--font-bold);
+  letter-spacing:.04em;
+  line-height:var(--leading-body);
+}
+.los{
+  grid-column:2;
+  justify-self:start;
+  margin-top:var(--gap-s);
+  font-weight:var(--font-bold);
+  font-size:var(--text-sm);
+  color:var(--gelb);
+  display:inline-flex;align-items:center;gap:.4em;
+}
+.los svg{width:1.1em;height:1.1em;transition:transform .2s}
+
+a.feld{cursor:pointer;transition:background-color .2s}
+a.feld:hover{background-color:var(--kreide-hauch)}
+a.feld:hover .los svg{transform:translateX(4px)}
+a.feld:active{background-color:var(--kreide-hauch);transform:translateY(3px)}
+a.feld:focus-visible{outline:var(--strich) solid var(--gelb);outline-offset:6px;border-radius:4px}
+a.feld.hopp{animation:hopp .38s cubic-bezier(.3,1.5,.5,1)}
+a.feld.hopp::after{
+  content:"";position:absolute;inset:18% 22%;z-index:-1;border-radius:50%;
+  background:var(--gelb);opacity:0;animation:staub .38s ease-out;
+}
+@keyframes hopp{
+  0%{transform:translateY(0)}
+  40%{transform:translateY(-14px) scale(1.03)}
+  100%{transform:translateY(0) scale(1)}
+}
+@keyframes staub{0%{opacity:.35;transform:scale(.4)}100%{opacity:0;transform:scale(1.5)}}
+
+.feld.frei{color:var(--kreide-matt)}
+.feld.frei::before{border-style:dashed;border-color:var(--kreide-matt);opacity:.6}
+.feld.frei .nummer{color:var(--kreide-matt);opacity:.55}
+.feld.frei .titel{font-family:var(--font-chalk);font-weight:var(--font-bold);font-size:var(--text-xl);color:var(--kreide-matt)}
+
+/* Himmel */
+.himmel{
+  position:relative;
+  width:66%;
+  align-self:center;justify-self:center;
+  margin:calc(var(--strich) * -1) auto 0;
+  padding:var(--gap) var(--gap) var(--gap-l);
+  display:grid;justify-items:center;text-align:center;gap:var(--gap-xs);
+  isolation:isolate;
+}
+.himmel::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  border:var(--strich) solid var(--kreide);
+  border-top:none;
+  border-radius:0 0 50% 50% / 0 0 70% 70%;
+  filter:url(#kreide);
+}
+.himmel b{
+  font-family:var(--font-chalk);font-weight:var(--font-bold);
+  font-size:var(--text-3xl);line-height:var(--leading-tight);color:var(--gelb);
+}
+.himmel span{font-size:var(--text-sm);line-height:var(--leading-heading);color:var(--kreide-matt);max-width:18ch}
+
+.leer{
+  border:var(--strich) dashed var(--kreide-matt);
+  padding:var(--gap);
+  border-radius:4px;
+}
+.leer h2{margin:0 0 var(--gap-xs);font-family:var(--font-display);font-size:var(--text-xl);line-height:var(--leading-heading)}
+.leer p{margin:0;color:var(--kreide-matt)}
+
+/* ---------- Fuss für Lehrpersonen ---------- */
+.fuss{
+  border-top:2px solid var(--asphalt-hell);
+  padding-top:var(--gap);
+  max-width:58ch;
+  font-size:var(--text-sm);
+  color:var(--kreide-matt);
+}
+.fuss h2{margin:0 0 var(--gap-xs);font-size:var(--text-sm);font-weight:var(--font-bold);letter-spacing:.08em;text-transform:uppercase;color:var(--kreide)}
+.fuss p{margin:0 0 var(--gap-xs)}
+
+/* ---------- Breiter Bildschirm: Raster brechen ---------- */
+@media (min-width: 52rem){
+  :root{--text-base:1.1875rem}
+  .seite{
+    grid-template-columns:repeat(12, minmax(0,1fr));
+    column-gap:var(--gap);
+    row-gap:var(--gap-xl);
+    padding-block:var(--gap-xl);
+  }
+  .kopf{grid-column:1 / span 6;grid-row:1;position:sticky;top:calc(env(safe-area-inset-top, 0px) + var(--gap-l));align-self:start}
+  h1{font-size:var(--text-6xl)}
+  .spielfeld{grid-column:7 / span 6;grid-row:1;margin-top:var(--gap-xl);margin-right:-3%;transform:rotate(-2.5deg)}
+  .fuss{grid-column:2 / span 7}
+}
+@media (max-width: 26rem){
+  :root{--text-base:1.0625rem}
+  .spielfeld{--breite:100%;margin-right:0;transform:rotate(-1deg)}
+  .reihe.einzeln .feld{width:80%}
+  .himmel{width:80%}
+  .feld{min-height:9.5rem}
+  .reihe.paar .nummer{font-size:var(--text-5xl)}
+  .reihe.paar .feld{grid-template-columns:minmax(0,1fr)}
+  .reihe.paar .nummer{grid-row:auto}
+  .reihe.paar .los{grid-column:1}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- Kreidestrich: raue Kanten für alle Linien -->
+<svg class="kreidefilter" aria-hidden="true" focusable="false">
+  <filter id="kreide" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.035 0.9" numOctaves="3" seed="7" result="rau"/>
+    <feDisplacementMap in="SourceGraphic" in2="rau" scale="3.5" xChannelSelector="R" yChannelSelector="G" result="verschoben"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="1" seed="3" result="koernig"/>
+    <feColorMatrix in="koernig" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.25" result="loecher"/>
+    <feComposite in="verschoben" in2="loecher" operator="in"/>
+  </filter>
+</svg>
+
+<main class="seite">
+  <header class="kopf">
+    <p class="ort">Pausenplatz</p>
+    <h1><span class="zeile">Spring auf</span> <span class="zeile">ein <span class="feldwort">Feld.</span></span></h1>
+    <p class="anleitung">Jedes Feld ist ein Rechenspiel. Tipp darauf und spiel los.</p>
+  </header>
+
+  <nav class="spielfeld" id="spielfeld" aria-label="Spiele zum Auswählen">
+    <p class="startlinie">Hier stehen</p>
+    <!-- wird aus apps.js gefüllt -->
+  </nav>
+
+  <footer class="fuss">
+    <h2>Für Lehrpersonen</h2>
+    <p>Die Spiele laufen direkt im Browser, ohne Anmeldung und ohne Installation. Mit dem Zurück-Pfeil des Browsers kommen die Kinder wieder auf den Pausenplatz.</p>
+    <p>Neue Spiele und neue Versionen kommen über die Datei <code>apps.js</code> und den Ordner <code>apps</code> auf die Seite.</p>
+  </footer>
+</main>
+
+<script src="apps.js"></script>
+<script>
+(function(){
+  var apps = Array.isArray(window.APPS) ? window.APPS.filter(function(a){ return a && a.datei && a.titel; }) : [];
+  var feld = document.getElementById('spielfeld');
+
+  var PFEIL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  if(!apps.length){
+    feld.insertAdjacentHTML('beforeend',
+      '<div class="leer"><h2>Noch kein Spiel auf dem Pausenplatz</h2>' +
+      '<p>Lade ein Spiel in den Ordner «apps» und trag es in der Datei apps.js ein. Dann erscheint hier das erste Feld.</p></div>');
+    return;
+  }
+
+  // Hüpfspiel-Muster: einzeln, einzeln, Paar, einzeln, Paar, einzeln, Paar …
+  var muster = [1,1,2,1,2,1,2,1,2,1,2];
+  var noetig = Math.max(apps.length + 1, 4);   // immer mindestens ein freies Feld
+  var reihen = [], gezaehlt = 0, i = 0;
+  while(gezaehlt < noetig){
+    var n = muster[i % muster.length];
+    reihen.push(n); gezaehlt += n; i++;
+  }
+
+  var nr = 0, html = '';
+  reihen.forEach(function(anzahl){
+    html += '<div class="reihe ' + (anzahl === 2 ? 'paar' : 'einzeln') + '">';
+    for(var k = 0; k < anzahl; k++){
+      var app = apps[nr];
+      nr++;
+      if(app){
+        html += '<a class="feld" style="--i:' + nr + '" href="' + esc(app.datei) + '">' +
+          '<span class="nummer" aria-hidden="true">' + nr + '</span>' +
+          '<h2 class="titel">' + esc(app.titel) + '</h2>' +
+          (app.uebt ? '<p class="uebt">' + esc(app.uebt) + '</p>' : '') +
+          (app.klasse ? '<span class="klasse">' + esc(app.klasse) + '</span>' : '') +
+          '<span class="los">Spiel starten ' + PFEIL + '</span>' +
+          '</a>';
+      } else {
+        html += '<div class="feld frei" style="--i:' + nr + '" aria-hidden="true">' +
+          '<span class="nummer">' + nr + '</span>' +
+          '<p class="titel">frei</p>' +
+          '</div>';
+      }
+    }
+    html += '</div>';
+  });
+  html += '<div class="himmel"><b>Himmel</b><span>Bald kommen hier neue Spiele dazu.</span></div>';
+  feld.insertAdjacentHTML('beforeend', html);
+
+  // Hüpfer beim Antippen, danach das Spiel öffnen
+  var ruhig = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  feld.addEventListener('click', function(e){
+    var a = e.target.closest('a.feld');
+    if(!a || ruhig || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    a.classList.remove('hopp'); void a.offsetWidth; a.classList.add('hopp');
+    setTimeout(function(){ window.location.href = a.href; }, 360);
+  });
+})();
+</script>
+</body>
+</html>
