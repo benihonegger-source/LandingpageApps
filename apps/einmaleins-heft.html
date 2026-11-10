@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Einmaleins-Heft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   GLOBALE VARIABLEN – Typografie (modulare Skala 1.25)
+   ========================================================= */
+:root{
+  --text-base: 1.0625rem;
+  --text-xs:  calc(var(--text-base) / 1.5625);
+  --text-sm:  calc(var(--text-base) / 1.25);
+  --text-lg:  calc(var(--text-base) * 1.25);
+  --text-xl:  calc(var(--text-base) * 1.5625);
+  --text-2xl: calc(var(--text-base) * 1.953);
+  --text-3xl: calc(var(--text-base) * 2.441);
+  --text-4xl: calc(var(--text-base) * 3.052);
+  --text-5xl: calc(var(--text-base) * 3.815);
+  --text-6xl: calc(var(--text-base) * 4.768);
+
+  --font-regular: 400;
+  --font-medium: 600;
+  --font-bold: 700;
+  --font-black: 800;
+
+  --leading-body: 1.5;
+  --leading-heading: 1.2;
+  --leading-tight: 1;
+
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-text: "Atkinson Hyperlegible", "Verdana", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+
+  /* Farben: Hauptfarbe Tintenblau, Akzent Rotstift */
+  --paper: #fbf8f1;
+  --paper-deep: #f3eee2;
+  --grid: #dbe5ee;
+  --ink: #1f3a5f;
+  --ink-soft: #e4ebf3;
+  --pen: #c42f1b;
+  --pen-soft: #fbe3dc;
+  --muted: #56636f;
+  --line: #d6cdb9;
+  --ok: #2b7149;
+  --ok-soft: #d9ecdf;
+  --amber-soft: #f5e3b3;
+  --amber-ink: #644600;
+
+  /* Raum: bewusst ungleich */
+  --sq: 22px;             /* Karo-Raster */
+  --gap-tight: 6px;
+  --gap: 14px;
+  --gap-wide: 28px;
+  --gap-air: 48px;
+  --radius-sm: 6px;
+  --radius: 14px;
+  --margin-line: 46px;    /* roter Heftrand */
+}
+@media (max-width: 420px){ :root{ --text-base: 1rem; --margin-line: 30px; } }
+
+/* =========================================================
+   GRUNDLAGE
+   ========================================================= */
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{font-size:100%;overflow-x:hidden}
+body{
+  margin:0; color:var(--ink);
+  font-family:var(--font-text); font-size:var(--text-base); line-height:var(--leading-body);
+  font-weight:var(--font-regular);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:var(--sq) var(--sq);
+  -webkit-tap-highlight-color:transparent;
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:var(--radius-sm)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.app{max-width:960px;margin:0 auto;padding:var(--gap) var(--gap) var(--gap-air)}
+
+/* =========================================================
+   KOPF
+   ========================================================= */
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:var(--gap);padding:var(--gap-wide) 0 var(--gap)}
+.title{margin:0;font-family:var(--font-display);font-weight:var(--font-black);font-size:var(--text-3xl);line-height:var(--leading-tight);letter-spacing:-.02em}
+.title em{font-style:normal;color:var(--pen);font-family:var(--font-hand);font-weight:var(--font-bold);font-size:var(--text-4xl);display:inline-block;transform:rotate(-4deg) translateY(4px);margin-left:4px}
+.kicker{font-size:var(--text-sm);color:var(--muted);margin:0 0 4px;font-weight:var(--font-bold);letter-spacing:.06em;text-transform:uppercase}
+
+/* Schieber klein / gross */
+.stage-switch{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.stage-switch .kicker{margin:0}
+.slider{
+  position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  padding:4px;border:2px solid var(--ink);border-radius:999px;background:var(--paper);
+  min-height:48px;
+}
+.slider::before{
+  content:"";position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / 3);
+  border-radius:999px;background:var(--ink);transition:transform .3s cubic-bezier(.5,1.6,.4,1)
+}
+.slider[data-pos="1"]::before{transform:translateX(100%)}
+.slider[data-pos="2"]::before{transform:translateX(200%)}
+.slider button{position:relative;z-index:1;border:none;background:none;border-radius:999px;min-height:40px;padding:0 var(--gap);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:var(--font-medium);font-size:var(--text-base);white-space:nowrap;transition:color .2s}
+.slider button:hover:not(.on){color:var(--pen)}
+.slider button.on{color:var(--paper)}
+@media (max-width:540px){
+  .stage-switch,.slider{width:100%}
+  .slider button{padding:0 4px;font-size:var(--text-sm)}
+}
+
+/* =========================================================
+   REITER
+   ========================================================= */
+.tabs{display:flex;gap:var(--gap-tight);border-bottom:2px solid var(--ink);margin-bottom:var(--gap-wide)}
+.tab{
+  border:2px solid var(--ink);border-bottom:none;background:var(--paper-deep);
+  padding:10px var(--gap-wide) 8px;min-height:48px;border-radius:var(--radius) var(--radius) 0 0;
+  font-family:var(--font-display);font-weight:var(--font-medium);font-size:var(--text-lg);
+  margin-bottom:-2px;transition:background .15s
+}
+.tab:hover{background:var(--ink-soft)}
+.tab[aria-selected="true"]{background:var(--paper);padding-bottom:10px}
+.tab .count{display:inline-grid;place-items:center;min-width:1.6em;height:1.6em;margin-left:8px;border-radius:999px;
+  background:var(--pen);color:#fff;font-family:var(--font-text);font-size:var(--text-sm);font-weight:var(--font-bold)}
+
+/* =========================================================
+   LEVEL – Registerstreifen
+   ========================================================= */
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap-tight);margin-bottom:var(--gap)}
+.level{
+  text-align:left;border:2px solid var(--line);background:var(--paper);border-radius:var(--radius-sm);
+  padding:10px;min-height:56px;min-width:0;transition:border-color .15s, background .15s
+}
+.level:hover{border-color:var(--ink)}
+.level b{display:block;font-family:var(--font-display);font-weight:var(--font-medium);font-size:var(--text-base);line-height:var(--leading-heading)}
+.level small{display:block;color:var(--muted);font-size:var(--text-sm);line-height:var(--leading-heading);margin-top:2px}
+.level .no{font-family:var(--font-hand);font-weight:var(--font-bold);font-size:var(--text-xl);color:var(--pen);line-height:var(--leading-tight);float:right}
+.level[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.level[aria-pressed="true"] small{color:var(--ink-soft)}
+.level[aria-pressed="true"] .no{color:#ffb7a8}
+
+.banner{display:flex;align-items:center;justify-content:space-between;gap:var(--gap);
+  border:2px dashed var(--pen);border-radius:var(--radius-sm);background:var(--pen-soft);
+  padding:8px 8px 8px var(--gap);margin-bottom:var(--gap);font-weight:var(--font-bold);color:#7f1d0f}
+
+/* =========================================================
+   HEFTSEITE (Übungsbereich)
+   ========================================================= */
+.workspace{display:grid;grid-template-columns:1fr;gap:var(--gap-wide);align-items:start}
+@media (min-width:760px){ .workspace{grid-template-columns:minmax(0,1fr) 300px} }
+
+.page{
+  position:relative;background:var(--paper);
+  border:2px solid var(--ink);border-radius:var(--radius-sm) var(--radius) var(--radius) var(--radius-sm);
+  padding:var(--gap-wide) var(--gap-wide) var(--gap-wide) calc(var(--margin-line) + var(--gap));
+  background-image:
+    linear-gradient(90deg, transparent calc(var(--margin-line) - 2px), var(--pen) calc(var(--margin-line) - 2px), var(--pen) var(--margin-line), transparent var(--margin-line)),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:100% 100%, var(--sq) var(--sq), var(--sq) var(--sq);
+  min-height:360px;
+}
+.page-meta{display:flex;justify-content:space-between;gap:var(--gap);font-size:var(--text-sm);color:var(--muted);font-weight:var(--font-bold)}
+
+.boxes{display:flex;gap:4px;margin:var(--gap-tight) 0 var(--gap-air)}
+.boxes i{width:var(--sq);height:var(--sq);border:2px solid var(--ink);display:grid;place-items:center;background:var(--paper)}
+.boxes i.cur{background:var(--ink-soft)}
+.boxes svg{width:16px;height:16px}
+
+.expr{
+  font-family:var(--font-display);font-weight:var(--font-black);
+  font-size:var(--text-4xl);line-height:var(--leading-tight);
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+  display:flex;align-items:baseline;flex-wrap:nowrap;gap:.25em;white-space:nowrap
+}
+@media (min-width:760px){ .expr{font-size:var(--text-6xl)} }
+.expr.long{font-size:var(--text-3xl)}
+@media (min-width:760px){ .expr.long{font-size:var(--text-5xl)} }
+.expr.xlong{font-size:var(--text-2xl)}
+@media (min-width:760px){ .expr.xlong{font-size:var(--text-4xl)} }
+.hm.h td{font-size:calc(var(--text-xs) * .9);letter-spacing:-.03em}
+.expr .op{color:var(--muted);font-weight:var(--font-medium)}
+.slot{
+  position:relative;display:inline-block;min-width:2.1em;text-align:center;
+  border:3px solid var(--ink);border-radius:var(--radius-sm);padding:.04em .12em;background:#fff;
+  color:var(--ink)
+}
+.slot.blank::after{content:"";display:inline-block;width:3px;height:.8em;background:var(--ink);vertical-align:-.05em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.slot.ok{border-color:var(--ok);color:var(--ok)}
+.slot.bad{border-color:var(--pen)}
+.slot.bad s{color:var(--muted);text-decoration-color:var(--pen);text-decoration-thickness:.09em}
+.corr{
+  position:absolute;left:78%;top:-.62em;
+  font-family:var(--font-hand);font-weight:var(--font-bold);font-size:.82em;color:var(--pen);
+  transform:rotate(-8deg);white-space:nowrap
+}
+.corr.draw{animation:write .45s ease-out both}
+@keyframes write{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+
+.fb{min-height:4.2em;margin-top:var(--gap-wide);font-size:var(--text-lg);line-height:var(--leading-heading)}
+.fb .hand{font-family:var(--font-hand);font-weight:var(--font-bold);font-size:var(--text-3xl);line-height:var(--leading-tight)}
+.fb.ok{color:var(--ok)}
+.fb.bad{color:var(--pen)}
+.fb .tip{display:block;color:var(--ink);font-size:var(--text-base);margin-top:4px;font-family:var(--font-text)}
+.fb svg{width:1em;height:1em;vertical-align:-.12em;margin-right:.2em}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:48px;padding:0 var(--gap-wide);border-radius:999px;border:2px solid var(--ink);
+  background:var(--ink);color:var(--paper);font-family:var(--font-display);font-weight:var(--font-medium);font-size:var(--text-base);
+  transition:transform .1s, background .15s
+}
+.btn:hover{background:#2a4c79}
+.btn:active{transform:translateY(2px)}
+.btn.line{background:var(--paper);color:var(--ink)}
+.btn.line:hover{background:var(--ink-soft)}
+.btn.pen{background:var(--pen);border-color:var(--pen);color:#fff}
+.btn.pen:hover{background:#a92612}
+.btn.quiet{background:none;border-color:var(--line);color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-row{display:flex;flex-wrap:wrap;gap:var(--gap-tight)}
+
+/* Zahlenfeld */
+.pad-wrap .kicker{margin-bottom:var(--gap-tight)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap-tight)}
+.key{
+  min-height:60px;border-radius:var(--radius);border:2px solid var(--ink);background:var(--paper);
+  font-family:var(--font-display);font-weight:var(--font-black);font-size:var(--text-2xl);
+  box-shadow:0 4px 0 var(--ink);transition:transform .08s, box-shadow .08s, background .15s
+}
+.key:hover{background:var(--ink-soft)}
+.key:active,.key.hit{transform:translateY(4px);box-shadow:0 0 0 var(--ink)}
+.key.del{font-size:var(--text-lg);color:var(--muted)}
+.key.go{background:var(--pen);border-color:var(--pen);color:#fff;font-size:var(--text-base);box-shadow:0 4px 0 #7f1d0f}
+.key.go:hover{background:#a92612}
+.pad-hint{font-size:var(--text-sm);color:var(--muted);margin:var(--gap) 0 0}
+
+/* Rundenende – Stempel */
+.summary{display:grid;gap:var(--gap);justify-items:start}
+.score{font-family:var(--font-hand);font-weight:var(--font-bold);font-size:var(--text-6xl);line-height:var(--leading-tight);color:var(--pen)}
+.score small{font-size:var(--text-2xl);color:var(--ink)}
+.stamp{
+  display:inline-grid;place-items:center;text-align:center;
+  width:9.5em;height:9.5em;border-radius:50%;border:4px double var(--pen);color:var(--pen);
+  font-family:var(--font-display);font-weight:var(--font-black);font-size:var(--text-sm);line-height:var(--leading-heading);
+  text-transform:uppercase;letter-spacing:.08em;transform:rotate(-12deg);opacity:.9;
+  animation:stamp .35s cubic-bezier(.3,1.6,.5,1) both
+}
+.stamp b{display:block;font-size:var(--text-xl);letter-spacing:.02em}
+@keyframes stamp{from{transform:rotate(-12deg) scale(1.8);opacity:0}}
+.summary-head{display:flex;align-items:center;gap:var(--gap-wide);flex-wrap:wrap}
+
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* =========================================================
+   LERNSTAND
+   ========================================================= */
+.dash-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--gap);margin-bottom:var(--gap)}
+.dash-head h2{margin:0;font-family:var(--font-display);font-weight:var(--font-black);font-size:var(--text-2xl);line-height:var(--leading-heading)}
+.facts{display:flex;flex-wrap:wrap;gap:var(--gap-wide);margin:0 0 var(--gap-wide);padding:0;list-style:none}
+.facts li{display:flex;flex-direction:column}
+.facts b{font-family:var(--font-display);font-weight:var(--font-black);font-size:var(--text-3xl);line-height:var(--leading-tight)}
+.facts span{font-size:var(--text-sm);color:var(--muted)}
+.facts .alert b{color:var(--pen)}
+
+.dash{display:grid;grid-template-columns:1fr;gap:var(--gap-wide)}
+@media (min-width:760px){ .dash{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)} }
+.panel{background:var(--paper);border:2px solid var(--ink);border-radius:var(--radius-sm);padding:var(--gap)}
+.panel h3{margin:0 0 var(--gap-tight);font-family:var(--font-display);font-weight:var(--font-medium);font-size:var(--text-lg);line-height:var(--leading-heading)}
+.panel p{margin:0 0 var(--gap)}
+
+.hm table{border-collapse:collapse;width:100%;table-layout:fixed;font-variant-numeric:tabular-nums}
+.hm th{font-family:var(--font-display);font-size:var(--text-xs);font-weight:var(--font-medium);color:var(--muted);height:24px}
+.hm td{border:1px solid var(--grid);height:32px;text-align:center;font-size:var(--text-xs);font-weight:var(--font-bold);background:#fff;color:transparent}
+.hm td.ok{background:var(--ok-soft);color:var(--ok)}
+.hm td.fixed{background:var(--amber-soft);color:var(--amber-ink)}
+.hm td.open{background:var(--pen);color:#fff}
+.legend{display:flex;flex-wrap:wrap;gap:var(--gap-tight) var(--gap);font-size:var(--text-sm);color:var(--muted);margin-top:var(--gap)}
+.map-note{font-size:var(--text-sm);color:var(--muted);margin:var(--gap-tight) 0 0}
+.legend i{display:inline-block;width:14px;height:14px;border:1px solid var(--line);vertical-align:-2px;margin-right:6px}
+
+.chips{display:flex;flex-wrap:wrap;gap:var(--gap-tight);margin-bottom:var(--gap)}
+.chip{font-family:var(--font-display);font-weight:var(--font-medium);font-size:var(--text-base);font-variant-numeric:tabular-nums;
+  border:2px solid var(--pen);color:var(--pen);border-radius:var(--radius-sm);padding:2px 10px;background:#fff}
+.chip small{font-family:var(--font-text);font-size:var(--text-xs);color:var(--muted);margin-left:6px;font-weight:var(--font-regular)}
+.chip.fixed{border-color:var(--amber-ink);color:var(--amber-ink);background:var(--amber-soft)}
+.empty{color:var(--muted);font-size:var(--text-sm)}
+
+.firstuse{border:2px dashed var(--ink);border-radius:var(--radius-sm);padding:var(--gap-wide);background:var(--paper);max-width:560px}
+.firstuse h2{margin:0 0 var(--gap-tight);font-family:var(--font-display);font-weight:var(--font-black);font-size:var(--text-2xl);line-height:var(--leading-heading)}
+.firstuse p{margin:0 0 var(--gap)}
+
+.printbox{margin-top:var(--gap-wide);padding-top:var(--gap-wide);border-top:2px dashed var(--line)}
+.printbox label{display:block;font-size:var(--text-sm);font-weight:var(--font-bold);margin-bottom:4px}
+.printbox input{width:100%;min-height:48px;padding:0 var(--gap);border:2px solid var(--ink);border-radius:var(--radius-sm);background:#fff;margin-bottom:var(--gap)}
+.hint{font-size:var(--text-sm);color:var(--muted);margin:var(--gap-tight) 0 0}
+
+footer{margin-top:var(--gap-air);font-size:var(--text-sm);color:var(--muted);max-width:52ch}
+
+@media (max-width:540px){
+  .levels small{display:none}
+  .level{padding:8px}
+  .level .no{float:none;display:block}
+  .level b{font-size:var(--text-sm);hyphens:auto}
+  .tab{padding-left:var(--gap);padding-right:var(--gap)}
+  .page{padding:var(--gap) var(--gap) var(--gap-wide) calc(var(--margin-line) + var(--gap-tight))}
+  .boxes{margin-bottom:var(--gap-wide)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+
+/* =========================================================
+   DRUCK / PDF
+   ========================================================= */
+#report{display:none}
+@media print{
+  @page{margin:14mm}
+  :root{--text-base:10.5pt}
+  body{background:#fff}
+  .app{display:none}
+  #report{display:block}
+  #report *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #report h1{font-family:var(--font-display);font-weight:var(--font-black);font-size:var(--text-3xl);line-height:var(--leading-heading);margin:0}
+  #report .sub{color:var(--muted);margin:2px 0 var(--gap)}
+  #report h2{font-family:var(--font-display);font-size:var(--text-xl);line-height:var(--leading-heading);margin:var(--gap-wide) 0 var(--gap-tight);padding-bottom:4px;border-bottom:2px solid var(--ink)}
+  #report h3{font-family:var(--font-display);font-size:var(--text-base);margin:var(--gap) 0 var(--gap-tight)}
+  #report .facts{gap:var(--gap-wide);margin-bottom:var(--gap)}
+  #report .facts b{font-size:var(--text-xl)}
+  #report .hm{max-width:150mm}
+  #report .hm td{height:20px}
+  #report .stage{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <p class="kicker">Rechentraining</p>
+      <h1 class="title">Einmaleins-<em>Heft</em></h1>
+    </div>
+    <div class="stage-switch">
+      <span class="kicker" id="stageLbl">Was möchtest du üben?</span>
+      <div class="slider" id="stageSlider" role="radiogroup" aria-labelledby="stageLbl" data-pos="0">
+        <button role="radio" aria-checked="true" data-s="k" class="on">Kleines 1×1</button>
+        <button role="radio" aria-checked="false" data-s="g">Grosses 1×1</button>
+        <button role="radio" aria-checked="false" data-s="h">Bis 10 000</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabTrain" aria-selected="true" aria-controls="viewTrain">Üben</button>
+    <button class="tab" role="tab" id="tabDash" aria-selected="false" aria-controls="viewDash">Lernstand<span class="count" id="errBadge" hidden>0</span></button>
+  </nav>
+
+  <!-- ÜBEN -->
+  <section id="viewTrain" role="tabpanel" aria-labelledby="tabTrain">
+    <div class="levels" id="levels">
+      <button class="level" data-l="1" aria-pressed="true"><span class="no">1</span><b>Kernaufgaben</b><small id="l1desc"></small></button>
+      <button class="level" data-l="2" aria-pressed="false"><span class="no">2</span><b>Alle Aufgaben</b><small id="l2desc"></small></button>
+      <button class="level" data-l="3" aria-pressed="false"><span class="no">3</span><b>Knacknüsse</b><small id="l3desc"></small></button>
+    </div>
+    <div class="banner" id="errBanner" hidden>
+      <span id="errBannerText"></span>
+      <button class="btn line" id="errStop">Fehlertraining beenden</button>
+    </div>
+    <div class="workspace">
+      <div class="page" id="taskCard" aria-live="polite"></div>
+      <div class="pad-wrap">
+        <p class="kicker">Zahlenfeld</p>
+        <div class="pad" id="pad"></div>
+        <p class="pad-hint">Du kannst auch mit der Tastatur tippen. Enter prüft die Antwort.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LERNSTAND -->
+  <section id="viewDash" role="tabpanel" aria-labelledby="tabDash" hidden></section>
+
+  <footer>Es werden keine Daten gespeichert. Wer die Seite neu lädt oder schliesst, beginnt wieder mit einem leeren Heft. Den Lernstand vorher als PDF sichern.</footer>
+</div>
+
+<div id="report"></div>
+
+<script>
+(function(){
+const ROUND = 10;
+const KERN = [1,2,5,10];
+const HARD_SMALL = [3,4,6,7,8,9];
+const HARD_BIG = [13,14,16,17,18,19];
+
+const ICON = {
+  check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13l5 5L20 6" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  cross:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>'
+};
+
+const S = {
+  stage:'k', level:1, mode:'train',
+  stats:{},
+  cur:null, input:'', given:'', answered:false, lastOk:false, lastKey:null,
+  roundRes:[], queue:[], errTotal:0, errDone:0, summary:false
+};
+
+const $ = s => document.querySelector(s);
+const range = (a,b) => { const r=[]; for(let i=a;i<=b;i++) r.push(i); return r; };
+const STAGES = ['k','g','h'];
+const stageName = s => ({k:'Kleines 1×1', g:'Grosses 1×1', h:'Rechnen bis 10 000'})[s];
+const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const esc = s => s.replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+function keyOf(stage,a,b){
+  if(stage==='k') return Math.min(a,b)+'x'+Math.max(a,b);
+  if(stage==='h') return a+'x'+b;          // immer [kleinerer Faktor, grösserer Faktor]
+  return a>=11 ? a+'x'+b : b+'x'+a;
+}
+const pairOf = k => k.split('x').map(Number);
+
+function pool(stage,level){
+  const out=[];
+  if(stage==='k'){
+    for(let a=1;a<=10;a++) for(let b=a;b<=10;b++){
+      const kern = KERN.includes(a)||KERN.includes(b)||a===b;
+      const hard = HARD_SMALL.includes(a)&&HARD_SMALL.includes(b)&&a!==b&&!(a<=4&&b<=4);
+      if(level===1&&!kern) continue;
+      if(level===3&&!hard) continue;
+      out.push([a,b]);
+    }
+  } else if(stage==='h'){
+    // Hundertereinmaleins: 1–10 mal 100–1000
+    for(let a=1;a<=10;a++) for(let t=1;t<=10;t++){
+      const kern = KERN.includes(a)||KERN.includes(t);
+      const hard = a>=6&&a<=9&&t>=6&&t<=9&&a!==t;
+      if(level===1&&!kern) continue;
+      if(level===3&&!hard) continue;
+      out.push([a,t*100]);
+    }
+    if(level===3){
+      // Zehnerzahl mal Zehnerzahl (z.B. 40 · 70)
+      for(let x=20;x<=90;x+=10) for(let y=x+10;y<=90;y+=10) out.push([x,y]);
+      // dreistellig mal einstellig (z.B. 8 · 365)
+      for(let a=3;a<=9;a++) for(let b=112;b<=999;b++){
+        if(b%10<2||b%100<10||a*b>10000) continue;
+        out.push([a,b]);
+      }
+    }
+  } else {
+    for(let a=11;a<=20;a++) for(let b=1;b<=10;b++){
+      const kern = KERN.includes(b)||a===11||a===20;
+      const hard = HARD_BIG.includes(a)&&HARD_SMALL.includes(b);
+      if(level===1&&!kern) continue;
+      if(level===3&&!hard) continue;
+      out.push([a,b]);
+    }
+  }
+  return out;
+}
+
+function levelDescs(){
+  if(S.stage==='k'){
+    $('#l1desc').textContent='mal 1, 2, 5, 10 und Quadratzahlen';
+    $('#l2desc').textContent='alle Aufgaben bis 10 · 10';
+    $('#l3desc').textContent='6er- bis 9er-Reihe, Lückenaufgaben';
+  } else if(S.stage==='g'){
+    $('#l1desc').textContent='mal 1, 2, 5, 10 sowie 11er und 20er';
+    $('#l2desc').textContent='11 bis 20 mal 1 bis 10';
+    $('#l3desc').textContent='13er bis 19er, Lückenaufgaben';
+  } else {
+    $('#l1desc').textContent='mal 100, 200, 500, 1000 und 2 · 400, 5 · 300';
+    $('#l2desc').textContent='Hundertereinmaleins bis 10 · 1000';
+    $('#l3desc').textContent='7 · 800, 40 · 70, 8 · 365 und Lückenaufgaben';
+  }
+}
+
+const st = (stage,k) => S.stats[stage+':'+k];
+const stateOf = s => !s ? 'none' : s.open ? 'open' : s.everWrong ? 'fixed' : 'ok';
+
+function record(t,ok){
+  const id=t.stage+':'+t.k;
+  const s=S.stats[id]||(S.stats[id]={r:0,w:0,open:false,everWrong:false});
+  if(ok){ s.r++; s.open=false; } else { s.w++; s.open=true; s.everWrong=true; }
+}
+const keysWhere = (stage,fn) => Object.keys(S.stats).filter(id=>id.startsWith(stage+':')&&fn(S.stats[id])).map(id=>id.slice(2));
+const openKeys  = stage => keysWhere(stage, s=>s.open);
+const fixedKeys = stage => keysWhere(stage, s=>!s.open&&s.everWrong);
+
+function makeTask(pair,stage,level,forceProd){
+  const k=keyOf(stage,pair[0],pair[1]);
+  let [a,b]=pair;
+  if(Math.random()<.5) [a,b]=[b,a];
+  let type='prod';
+  const gapOk = stage!=='h' || hCat(pair)<2;
+  if(level===3&&!forceProd&&gapOk){ const r=Math.random(); type = r<.4?'prod':(r<.7?'f1':'f2'); }
+  const ans = type==='prod'?a*b:(type==='f1'?a:b);
+  return {a,b,k,stage,type,ans};
+}
+
+// 0 = Hundertereinmaleins, 1 = Zehner mal Zehner, 2 = dreistellig mal einstellig
+const hCat = ([a,b]) => (a<=10&&b%100===0) ? 0 : (a%10===0&&b%10===0) ? 1 : 2;
+function pick(){
+  let p=pool(S.stage,S.level);
+  if(S.stage==='h'&&S.level===3){
+    const c=Math.floor(Math.random()*3);
+    p=p.filter(x=>hCat(x)===c);
+  }
+  const weighted=[]; let total=0;
+  for(const pair of p){
+    const k=keyOf(S.stage,pair[0],pair[1]);
+    if(k===S.lastKey&&p.length>1) continue;
+    const s=st(S.stage,k);
+    const w = 1 + (s&&s.open?3:0) + (!s?0.5:0);
+    weighted.push([pair,w]); total+=w;
+  }
+  let r=Math.random()*total;
+  for(const [pair,w] of weighted){ if((r-=w)<=0) return pair; }
+  return weighted[weighted.length-1][0];
+}
+
+/* ---------- Ablauf ---------- */
+function newRound(){ S.mode='train'; S.summary=false; S.roundRes=[]; next(); }
+function next(){
+  S.input=''; S.given=''; S.answered=false;
+  if(S.mode==='err'){
+    if(!S.queue.length){ S.mode='err-done'; S.summary=true; renderTask(); return; }
+    S.cur=makeTask(S.queue[0],S.stage,0,true);
+  } else {
+    if(S.roundRes.length>=ROUND){ S.summary=true; renderTask(); return; }
+    S.cur=makeTask(pick(),S.stage,S.level,false);
+  }
+  S.lastKey=S.cur.k;
+  renderTask();
+}
+function submit(){
+  if(S.summary){ newRound(); return; }
+  if(S.answered){ next(); return; }
+  if(S.input===''){ nudge(); return; }
+  const ok=parseInt(S.input,10)===S.cur.ans;
+  S.answered=true; S.lastOk=ok; S.given=S.input;
+  record(S.cur,ok);
+  if(S.mode==='err'){ const first=S.queue.shift(); if(ok) S.errDone++; else S.queue.push(first); }
+  else S.roundRes.push(ok);
+  renderTask(); updateBadge();
+  if(!ok) nudge();
+  if(ok) setTimeout(()=>{ if(S.answered&&S.lastOk) next(); }, 850);
+}
+function nudge(){ const c=$('#taskCard'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); }
+function press(d){
+  if(S.summary||S.answered||S.input.length>=5) return;
+  if(S.input==='0') S.input='';
+  S.input+=d; renderTask();
+}
+function del(){ if(S.answered||S.summary) return; S.input=S.input.slice(0,-1); renderTask(); }
+
+function startErr(){
+  const keys=openKeys(S.stage);
+  if(!keys.length) return;
+  S.queue=shuffle(keys.map(pairOf));
+  S.errTotal=S.queue.length; S.errDone=0;
+  S.mode='err'; S.summary=false;
+  showTab('train'); next();
+}
+
+/* ---------- Darstellung Üben ---------- */
+function slotHTML(t){
+  if(!S.answered) return `<span class="slot ${S.input?'':'blank'}" aria-label="Deine Antwort">${S.input}</span>`;
+  if(S.lastOk) return `<span class="slot ok">${S.given}</span>`;
+  return `<span class="slot bad"><s>${S.given}</s><span class="corr draw" aria-label="richtig wäre ${t.ans}">${t.ans}</span></span>`;
+}
+function exprHTML(t){
+  const dot='<span class="op">·</span>', eq='<span class="op">=</span>', s=slotHTML(t);
+  if(t.type==='prod') return `<span>${t.a}</span>${dot}<span>${t.b}</span>${eq}${s}`;
+  if(t.type==='f1')   return `${s}${dot}<span>${t.b}</span>${eq}<span>${t.a*t.b}</span>`;
+  return `<span>${t.a}</span>${dot}${s}${eq}<span>${t.a*t.b}</span>`;
+}
+
+function exprSize(t){
+  const n=String(t.a).length+String(t.b).length;
+  return n>=6 ? 'long xlong' : n>=4 ? 'long' : '';
+}
+function renderTask(){
+  const card=$('#taskCard');
+  $('#errBanner').hidden = S.mode!=='err';
+  if(S.mode==='err') $('#errBannerText').textContent=`Fehler üben: ${S.errDone} von ${S.errTotal} verbessert`;
+
+  if(S.summary){
+    let score, stampTop, stampMain, line;
+    if(S.mode==='err-done'){
+      score=`${S.errTotal}<small> verbessert</small>`;
+      stampTop='Alle Fehler'; stampMain='korrigiert'; line='Jede falsche Aufgabe ist jetzt richtig gelöst. Im Lernstand sind sie gelb markiert.';
+    } else {
+      const n=S.roundRes.filter(Boolean).length;
+      score=`${n}<small> von ${ROUND}</small>`;
+      [stampTop,stampMain,line] =
+        n===10 ? ['Alles','richtig','Keine einzige falsche Aufgabe. Probier doch das nächste Level.'] :
+        n>=8   ? ['Sehr','gut','Nur noch wenige Fehler. Die findest du im Lernstand.'] :
+        n>=5   ? ['Gut','gemacht','Die falschen Aufgaben kommen in den nächsten Runden öfter dran.'] :
+                 ['Weiter','üben','Rechne noch eine Runde. Schwierige Aufgaben kommen öfter, bis sie sitzen.'];
+    }
+    card.innerHTML=`<div class="summary">
+      <div class="summary-head"><div class="score">${score}</div>
+      <div class="stamp" aria-hidden="true"><span>${stampTop}<b>${stampMain}</b></span></div></div>
+      <p>${line}</p>
+      <div class="btn-row"><button class="btn" id="sumNext">Nächste Runde starten</button><button class="btn line" id="sumDash">Lernstand ansehen</button></div></div>`;
+    $('#sumNext').onclick=newRound;
+    $('#sumDash').onclick=()=>{ S.mode='train'; S.summary=false; showTab('dash'); };
+    renderPad(); return;
+  }
+
+  const t=S.cur;
+  let boxes='';
+  if(S.mode==='train'){
+    boxes='<div class="boxes" aria-hidden="true">'+range(0,ROUND-1).map(i=>{
+      if(i<S.roundRes.length) return `<i style="color:var(${S.roundRes[i]?'--ok':'--pen'})">${S.roundRes[i]?ICON.check:ICON.cross}</i>`;
+      return `<i class="${i===S.roundRes.length?'cur':''}"></i>`;
+    }).join('')+'</div>';
+  } else boxes='<div class="boxes" aria-hidden="true"></div>';
+
+  const left = S.mode==='err' ? 'Fehler üben' : `Level ${S.level} · ${['','Kernaufgaben','Alle Aufgaben','Knacknüsse'][S.level]}`;
+  const right = S.mode==='err' ? `noch ${S.queue.length}` : `Aufgabe ${Math.min(S.roundRes.length+(S.answered?0:1),ROUND)} von ${ROUND}`;
+
+  let fb='<div class="fb"></div>';
+  if(S.answered){
+    fb = S.lastOk
+      ? `<div class="fb ok"><span class="hand">${ICON.check}richtig</span></div>`
+      : `<div class="fb bad"><span class="hand">Richtig ist:</span><span class="tip">${t.a} · ${t.b} = ${t.a*t.b}. Diese Aufgabe kommt bald wieder.</span></div>`;
+  }
+  card.innerHTML=`<div class="page-meta"><span>${stageName(S.stage)} · ${left}</span><span>${right}</span></div>${boxes}
+    <div class="expr ${exprSize(t)}" aria-label="Aufgabe">${exprHTML(t)}</div>${fb}`;
+  renderPad();
+}
+
+function renderPad(){
+  const go = S.summary ? 'Nächste Runde' : S.answered ? 'Weiter' : 'Prüfen';
+  $('#pad').innerHTML=[7,8,9,4,5,6,1,2,3].map(d=>`<button class="key" data-d="${d}">${d}</button>`).join('')+
+    `<button class="key del" data-x="del" aria-label="Letzte Ziffer löschen">⌫</button><button class="key" data-d="0">0</button><button class="key go" data-x="ok">${go}</button>`;
+}
+$('#pad').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.d!==undefined) press(b.dataset.d);
+  else if(b.dataset.x==='del') del();
+  else submit();
+});
+document.addEventListener('keydown',e=>{
+  if($('#viewTrain').hidden) return;
+  const tag=document.activeElement&&document.activeElement.tagName;
+  if(tag==='INPUT') return;
+  let k=null;
+  if(/^[0-9]$/.test(e.key)){ press(e.key); k=e.key; }
+  else if(e.key==='Backspace'){ del(); k='del'; }
+  else if(e.key==='Enter'){ if(tag==='BUTTON'&&!document.activeElement.closest('#pad')) return; submit(); k='ok'; }
+  else return;
+  e.preventDefault();
+  const el = /^[0-9]$/.test(k) ? $(`#pad [data-d="${k}"]`) : $(`#pad [data-x="${k}"]`);
+  if(el){ el.classList.add('hit'); setTimeout(()=>el.classList.remove('hit'),90); }
+});
+
+/* ---------- Lernstand ---------- */
+function heatmap(stage){
+  const rows = stage==='g'?range(11,20):range(1,10);
+  const cols = stage==='h'?range(1,10).map(c=>c*100):range(1,10);
+  let h=`<div class="hm ${stage}"><table><caption class="sr">Übersicht ${stageName(stage)}</caption><tr><th>·</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>`;
+  for(const r of rows){
+    h+=`<tr><th>${r}</th>`;
+    for(const c of cols){
+      const s=st(stage,keyOf(stage,r,c)), cls=stateOf(s);
+      const tip = s ? `${r} · ${c} = ${r*c}: ${s.r}× richtig, ${s.w}× falsch` : `${r} · ${c}: noch nicht geübt`;
+      h+=`<td class="${cls}" title="${tip}">${cls==='none'?'':r*c}</td>`;
+    }
+    h+='</tr>';
+  }
+  h+='</table></div>';
+  if(stage==='h') h+='<p class="map-note">Aufgaben wie 40 · 70 oder 8 · 365 stehen nicht auf der Tafel, nur in den Listen.</p>';
+  return h;
+}
+const LEGEND = `<div class="legend">
+  <span><i style="background:#fff"></i>noch nicht geübt</span>
+  <span><i style="background:var(--ok-soft)"></i>richtig</span>
+  <span><i style="background:var(--amber-soft)"></i>verbessert</span>
+  <span><i style="background:var(--pen)"></i>noch falsch</span></div>`;
+
+function totals(stage){
+  let r=0,w=0,tried=0;
+  for(const id in S.stats){ if(!id.startsWith(stage+':')) continue; const s=S.stats[id]; r+=s.r; w+=s.w; tried++; }
+  return {r,w,tried,all:{k:55,g:100,h:0}[stage],n:r+w,pct:r+w?Math.round(r/(r+w)*100):0};
+}
+function factsHTML(stage){
+  const t=totals(stage), open=openKeys(stage).length;
+  return `<ul class="facts">
+    <li><b>${t.n}</b><span>Aufgaben gelöst</span></li>
+    <li><b>${t.pct}&#8239;%</b><span>davon richtig</span></li>
+    <li><b>${t.all?t.tried+'/'+t.all:t.tried}</b><span>verschiedene Aufgaben</span></li>
+    <li class="${open?'alert':''}"><b>${open}</b><span>noch falsch</span></li></ul>`;
+}
+const fmt = k => k.replace('x',' · ');
+function chips(stage,keys,cls){
+  return keys.sort((a,b)=>{const[p,q]=pairOf(a),[r,s]=pairOf(b);return p-r||q-s;})
+    .map(k=>{const s=st(stage,k);return `<span class="chip ${cls}">${fmt(k)}<small>${s.w}× falsch</small></span>`;}).join('');
+}
+
+function renderDash(){
+  const stage=S.stage, view=$('#viewDash'), t=totals(stage);
+  if(!t.n){
+    const others = STAGES.filter(o=>o!==stage&&totals(o).n);
+    view.innerHTML=`<div class="firstuse"><h2>Noch leer: ${stageName(stage)}</h2>
+      <p>Rechne eine Runde mit zehn Aufgaben. Danach siehst du hier, welche Aufgaben schon sitzen und welche du verbessern kannst.</p>
+      <div class="btn-row"><button class="btn" id="goTrain">Erste Runde rechnen</button>
+      ${others.map(o=>`<button class="btn line" data-go="${o}">Lernstand ${stageName(o)} ansehen</button>`).join('')}</div></div>`;
+    $('#goTrain').onclick=()=>{ showTab('train'); newRound(); };
+    view.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>setStage(b.dataset.go));
+    return;
+  }
+  const open=openKeys(stage), fixed=fixedKeys(stage);
+  view.innerHTML=`<div class="dash-head"><h2>Lernstand ${stageName(stage)}</h2></div>${factsHTML(stage)}
+    <div class="dash">
+      <div class="panel"><h3>${stage==='h'?'Hundertereinmaleins':'Hundertertafel'}</h3>${heatmap(stage)}${LEGEND}</div>
+      <div>
+        <div class="panel">
+          <h3>Noch falsch</h3>
+          ${open.length?`<div class="chips">${chips(stage,open,'')}</div><button class="btn pen" id="practiceErr">${open.length===1?'Diese Aufgabe':'Diese '+open.length+' Aufgaben'} nochmals rechnen</button>`
+            :'<p class="empty">Keine offenen Fehler. Jede falsche Aufgabe wurde schon verbessert.</p>'}
+          <h3 style="margin-top:var(--gap-wide)">Verbessert</h3>
+          ${fixed.length?`<div class="chips">${chips(stage,fixed,'fixed')}</div>`:'<p class="empty">Hier erscheinen Aufgaben, die zuerst falsch und danach richtig gelöst wurden.</p>'}
+          <div class="printbox">
+            <div class="btn-row"><button class="btn" id="printBtn">Lernstand als PDF drucken</button>
+            <button class="btn quiet" id="resetBtn">Heft leeren</button></div>
+            <p class="hint">Im Druckfenster «Als PDF speichern» wählen. Der Ausdruck enthält alle drei Bereiche.</p>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  const pe=$('#practiceErr'); if(pe) pe.onclick=startErr;
+  $('#printBtn').onclick=()=>{ buildReport(); window.print(); };
+  $('#resetBtn').onclick=()=>{
+    if(!confirm('Den ganzen Lernstand aller drei Bereiche löschen?')) return;
+    S.stats={}; updateBadge(); renderDash(); newRound();
+  };
+}
+function updateBadge(){ const n=openKeys(S.stage).length, b=$('#errBadge'); b.hidden=!n; b.textContent=n; }
+
+function buildReport(){
+  const d=new Date().toLocaleDateString('de-CH',{day:'numeric',month:'long',year:'numeric'});
+  let h=`<h1>Lernstand Multiplikation</h1><p class="sub">${d}</p>`;
+  let any=false;
+  for(const stage of STAGES){
+    if(!totals(stage).n) continue;
+    any=true;
+    const open=openKeys(stage), fixed=fixedKeys(stage);
+    h+=`<div class="stage"><h2>${stageName(stage)}</h2>${factsHTML(stage)}${heatmap(stage)}${LEGEND}
+      <h3>Noch falsch (${open.length})</h3>${open.length?`<div class="chips">${chips(stage,open,'')}</div>`:'<p class="empty">Keine.</p>'}
+      <h3>Verbessert (${fixed.length})</h3>${fixed.length?`<div class="chips">${chips(stage,fixed,'fixed')}</div>`:'<p class="empty">Keine.</p>'}</div>`;
+  }
+  if(!any) h+='<p>Es wurden noch keine Aufgaben gelöst.</p>';
+  $('#report').innerHTML=h;
+}
+
+/* ---------- Steuerung ---------- */
+function showTab(t){
+  $('#viewTrain').hidden = t!=='train';
+  $('#viewDash').hidden = t!=='dash';
+  $('#tabTrain').setAttribute('aria-selected',t==='train');
+  $('#tabDash').setAttribute('aria-selected',t==='dash');
+  if(t==='dash') renderDash();
+}
+$('#tabTrain').onclick=()=>{ showTab('train'); if(S.mode==='err-done') newRound(); };
+$('#tabDash').onclick=()=>showTab('dash');
+
+function setStage(stage){
+  if(stage===S.stage) return;
+  S.stage=stage;
+  const sl=$('#stageSlider');
+  sl.dataset.pos=STAGES.indexOf(stage);
+  sl.querySelectorAll('button').forEach(b=>{
+    const on=b.dataset.s===stage;
+    b.classList.toggle('on',on); b.setAttribute('aria-checked',on); b.tabIndex=on?0:-1;
+  });
+  levelDescs(); updateBadge(); newRound();
+  if(!$('#viewDash').hidden) renderDash();
+}
+$('#stageSlider').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; setStage(b.dataset.s); if(e.detail) b.blur(); });
+$('#stageSlider').addEventListener('keydown',e=>{
+  const d = e.key==='ArrowRight'?1 : e.key==='ArrowLeft'?-1 : 0;
+  if(!d) return;
+  e.preventDefault(); e.stopPropagation();
+  const i=(STAGES.indexOf(S.stage)+d+3)%3;
+  setStage(STAGES[i]);
+  $('#stageSlider').querySelector(`[data-s="${STAGES[i]}"]`).focus();
+});
+$('#stageSlider').querySelectorAll('button').forEach(b=>b.tabIndex=b.classList.contains('on')?0:-1);
+$('#levels').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  S.level=+b.dataset.l;
+  document.querySelectorAll('#levels .level').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  if(e.detail) b.blur();   // nach Mausklick: Enter soll die Antwort prüfen, nicht die Runde neu starten
+  newRound();
+});
+$('#errStop').onclick=newRound;
+
+levelDescs();
+newRound();
+})();
+</script>
+</body>
+</html>

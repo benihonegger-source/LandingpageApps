@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Datenschutz: Die App darf keine Verbindungen ins Internet aufbauen und nichts nachladen. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#fff6e5">
+<title>Rechentrainer 1</title>
+<style>
+:root{
+  --bg:#fff6e5; --ink:#3b2f2a; --muted:#8c7b6f; --line:#efdcbf;
+  --red:#ef4b5c; --red-d:#c3303f; --blue:#3d8bfd; --blue-d:#1d63cc;
+  --green:#22b07d; --green-d:#15855d; --yellow:#ffc531; --orange:#ff8a3d;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:18px}
+@media (min-width:700px){html{font-size:20px}}
+body{
+  margin:0;min-height:100vh;color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(circle at 8% 0%,#ffe4b0 0,transparent 38%),radial-gradient(circle at 100% 100%,#ffe0d2 0,transparent 32%);
+  font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","Nunito","Varela Round",system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-text-size-adjust:100%;
+}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation;padding:0}
+input{font:inherit;-webkit-user-select:text;user-select:text}
+.wrap{max-width:1180px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px 28px}
+
+/* Drück-Knöpfe */
+.btn{background:var(--b,#fff);box-shadow:0 6px 0 var(--sh,var(--line));border-radius:24px;transition:transform .08s,box-shadow .08s}
+.btn:active:not(:disabled){transform:translateY(5px);box-shadow:0 1px 0 var(--sh,var(--line))}
+
+/* Kopfzeile */
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:12px}
+.face{width:62px;height:62px;border-radius:20px;background:#ffd78a;display:grid;place-items:center;font-size:38px;box-shadow:0 5px 0 #efb44a}
+.t1{font-weight:900;font-size:1.55rem;line-height:1.1}
+.t2{font-weight:700;font-size:.9rem;color:var(--muted)}
+.spacer{flex:1}
+.pill{background:#fff;border-radius:999px;padding:8px 18px;font-weight:900;font-size:1.3rem;box-shadow:0 4px 0 var(--line);display:flex;gap:8px;align-items:center}
+.iconbtn{width:62px;height:62px;border-radius:20px;font-size:30px;display:grid;place-items:center}
+
+/* Startseite */
+.hello{display:flex;align-items:center;gap:12px;margin:4px 0 18px}
+.fox{font-size:52px;line-height:1;display:inline-block}
+.fox.hop{animation:hop .55s}
+.bubble{background:#fff;border-radius:22px;padding:12px 18px;font-weight:800;font-size:1.2rem;box-shadow:0 4px 0 var(--line);position:relative}
+.bubble::before{content:"";position:absolute;left:-10px;top:50%;margin-top:-10px;border:10px solid transparent;border-right-color:#fff;border-left:0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:16px}
+.tile{text-align:left;padding:16px;display:flex;flex-direction:column;gap:6px;min-height:200px;position:relative;border:4px solid transparent}
+.tile:focus-visible,.level:focus-visible{border-color:var(--c)}
+.tile .ic{width:66px;height:66px;border-radius:22px;background:var(--c);display:grid;place-items:center;font-size:38px;box-shadow:0 4px 0 rgba(0,0,0,.14);margin-bottom:6px}
+.tile .num{position:absolute;top:14px;right:16px;font-weight:900;font-size:1.3rem;color:#d9c6a8}
+.tile .tt{font-weight:900;font-size:1.2rem;line-height:1.15}
+.tile .st{color:var(--muted);font-size:.9rem;font-weight:700}
+.pips{display:flex;gap:6px;margin-top:auto;padding-top:8px}
+.pip{flex:1;height:16px;border-radius:99px;background:#eee3d2;display:block}
+.pip.played{background:#ffd56b}.pip.done{background:var(--green)}
+.save{margin-top:24px;background:#fff;border-radius:28px;padding:18px;box-shadow:0 6px 0 var(--line);display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.savetxt{display:flex;flex-direction:column;gap:4px;max-width:440px}
+.savetxt b{font-size:1.25rem}
+.savetxt span{color:var(--muted);font-weight:700;font-size:.95rem}
+.savetxt span.warn{color:#b86a00}
+.savebtns{display:flex;flex-wrap:wrap;gap:12px}
+.sbtn{padding:14px 20px;font-weight:900;font-size:1.1rem;--b:#fff7ea;--sh:#ead7b7}
+.sbtn.green{--b:var(--green);--sh:var(--green-d);color:#fff}
+.privacy{text-align:center;color:var(--muted);font-weight:700;font-size:.9rem;margin-top:18px}
+
+/* Übungsseite */
+.modhead{display:flex;align-items:center;gap:12px}
+.ic.sm{width:58px;height:58px;border-radius:18px;background:var(--c);display:grid;place-items:center;font-size:32px;box-shadow:0 4px 0 rgba(0,0,0,.14)}
+.h2{font-size:1.3rem;font-weight:900;margin:22px 0 14px}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.level{padding:20px 12px 16px;display:flex;flex-direction:column;align-items:center;gap:4px;border:5px solid transparent;position:relative;text-align:center}
+.level.sel{border-color:var(--c);--b:#fffdf6}
+.level .em{font-size:58px;line-height:1.1}
+.level .nm{font-weight:900;font-size:1.45rem}
+.level .ds{color:var(--muted);font-size:.9rem;font-weight:700;min-height:2.5em}
+.level .stt{margin-top:6px;font-weight:900;font-size:.9rem;padding:6px 12px;border-radius:99px;background:#f3ece1}
+.level.done .stt{background:#dcf6ea;color:var(--green-d)}
+.level.played .stt{background:#fff1c7;color:#8a5a00}
+.tip{position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:var(--yellow);padding:4px 14px;border-radius:99px;font-weight:900;font-size:.85rem;white-space:nowrap;box-shadow:0 3px 0 #d9a514}
+.modes{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:16px}
+.mode{padding:22px 10px;font-weight:900;font-size:1.6rem;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px}
+.mode small{font-size:.9rem;opacity:.92}
+@media (max-width:620px){.levels,.modes{grid-template-columns:1fr}}
+
+/* Spielseite */
+.tag{background:#fff;border-radius:999px;padding:8px 16px;font-weight:900;font-size:1.3rem;box-shadow:0 4px 0 var(--line)}
+.dots{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.dot{width:20px;height:20px;border-radius:50%;background:#eadfcd;display:inline-block}
+.dot.cur{box-shadow:0 0 0 3px #fff,0 0 0 6px var(--orange)}
+.dot.g{background:var(--green)}.dot.y{background:var(--yellow)}.dot.o{background:#ff7a59}
+.playgrid{display:grid;grid-template-columns:1fr;gap:18px}
+@media (min-width:900px) and (orientation:landscape){.playgrid{grid-template-columns:1fr 360px;align-items:start}.padarea{position:sticky;top:16px}}
+.taskcard{background:#fff;border-radius:32px;padding:18px;box-shadow:0 6px 0 var(--line);display:flex;flex-direction:column;align-items:center;gap:14px}
+.qrow{display:flex;align-items:center;gap:12px;align-self:stretch}
+.q{font-weight:900;font-size:1.35rem;flex:1;line-height:1.25}
+.q.center{text-align:center}
+.speak{width:56px;height:56px;border-radius:18px;font-size:28px;display:grid;place-items:center;--b:#eaf2ff;--sh:#c7dafc;flex:none}
+.badge{background:#fff1c7;color:#8a5a00;font-weight:900;font-size:.85rem;padding:6px 12px;border-radius:99px;white-space:nowrap}
+.ref{background:#e3f8ee;border:3px solid #a8e6c9;border-radius:20px;padding:6px 18px;font-weight:900;font-size:1.7rem;color:var(--green-d)}
+
+/* 20er-Feld */
+.frame{width:100%;max-width:660px;background:#ffe6b3;border-radius:26px;padding:10px}
+.fgrid{display:grid;grid-template-columns:repeat(5,1fr) 10px repeat(5,1fr);gap:6px;background:#fffaf0;border-radius:18px;padding:10px;border:3px solid #f2d18e}
+.sep{display:block;border-left:3px dashed #e9c47d;margin:4px 0 4px 3px}
+.cell{aspect-ratio:1/1;border-radius:50%;background:#fff;border:2px solid #e6d8c2;display:grid;place-items:center;position:relative}
+button.cell:active{transform:scale(.93)}
+.d{width:84%;height:84%;border-radius:50%;display:block;position:relative}
+.d.r{background:radial-gradient(circle at 35% 30%,#ff98a3,var(--red) 55%,var(--red-d));box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.d.b{background:radial-gradient(circle at 35% 30%,#9cc4ff,var(--blue) 55%,var(--blue-d));box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.d.g{border:3px dashed #cbb38f;background:#fffaf0}
+.d.x{opacity:.6}
+.d.x::after{content:"✕";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-weight:900;font-size:clamp(15px,3.3vw,30px);text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.hidecard{width:100%;max-width:660px;min-height:170px;border-radius:26px;border:4px dashed #e6cfa6;background:#fffaf0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-weight:900;font-size:1.3rem;padding:16px;text-align:center}
+.hidecard .big{font-size:50px;line-height:1}
+.smallbtn{padding:12px 20px;font-weight:900;font-size:1.1rem;--b:#fff1c7;--sh:#efcf73;border-radius:20px}
+.timebar{width:100%;max-width:660px;height:12px;background:#e3edfd;border-radius:99px;overflow:hidden}
+.timebar i{display:block;height:100%;background:var(--blue);border-radius:99px;animation:shrink linear forwards}
+
+/* Zerlegehaus */
+.house{display:flex;flex-direction:column;align-items:center}
+.roof{width:0;height:0;border-left:120px solid transparent;border-right:120px solid transparent;border-bottom:70px solid var(--green);position:relative}
+.roof span{position:absolute;top:24px;left:0;transform:translateX(-50%);color:#fff;font-weight:900;font-size:2rem}
+.rooms{width:200px;display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#e3f8ee;border:4px solid var(--green);border-top:0;border-radius:0 0 18px 18px;padding:10px}
+.room{border-radius:14px;padding:4px;font-weight:900;font-size:1.9rem;text-align:center;background:#fff}
+.room.l{color:var(--red-d);border:3px solid #ffb3bb}.room.r{color:var(--blue-d);border:3px solid #a9c8ff}
+
+/* Rechnung */
+.formula{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;font-weight:900;font-size:clamp(2.3rem,6.5vw,3.5rem);line-height:1}
+.formula .op{color:#b6a493}
+.formula .red{color:var(--red-d)}.formula .blue{color:var(--blue-d)}
+.slot{min-width:1.8em;height:1.45em;padding:0 .2em;border-radius:22px;border:5px solid var(--yellow);background:#fff8dc;display:inline-grid;place-items:center;color:#7a4b00}
+.slot.empty{color:#e9b934}
+.slot.ok{border-color:var(--green);background:#e3f8ee;color:var(--green-d)}
+.slot.bad{border-color:var(--red);background:#ffe9eb;color:var(--red-d);animation:shake .3s 2}
+.slot.rev{border-color:var(--blue);background:#e8f1ff;color:var(--blue-d)}
+.mascot{display:flex;align-items:center;gap:12px;align-self:stretch;justify-content:center;min-height:62px}
+.mascot .bubble{background:#fff4d6;box-shadow:none;font-size:1.15rem;max-width:560px}
+.mascot .bubble::before{border-right-color:#fff4d6}
+
+/* Zahlenfeld */
+.pad{background:#fff;border-radius:32px;padding:16px;box-shadow:0 6px 0 var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:440px;margin:0 auto;width:100%}
+.key{height:74px;border-radius:22px;font-size:2.2rem;font-weight:900;--b:#fff7ea;--sh:#ead7b7}
+.key.del{--b:#ffe7c2;--sh:#ecc78a}
+.key.ok{--b:var(--green);--sh:var(--green-d);color:#fff}
+.key:disabled{opacity:.4}
+.next{grid-column:1/-1;height:80px;--b:var(--blue);--sh:var(--blue-d);color:#fff;font-size:1.7rem;font-weight:900}
+
+/* Ende einer Runde */
+.end{background:#fff;border-radius:36px;padding:26px 20px;text-align:center;box-shadow:0 6px 0 var(--line);max-width:620px;margin:10px auto;display:flex;flex-direction:column;gap:12px;align-items:center}
+.fox.big{font-size:80px}
+.bigstars{font-size:66px;letter-spacing:8px;line-height:1}
+.bigstars .off{filter:grayscale(1);opacity:.25}
+.score{font-size:2.2rem;font-weight:900}
+.sub{font-size:1.25rem;font-weight:800;color:var(--muted)}
+.dots.bigd .dot{width:28px;height:28px}
+.won{background:#dcf6ea;color:var(--green-d);font-weight:900;font-size:1.2rem;padding:10px 18px;border-radius:99px}
+.endbtns{display:grid;gap:14px;width:100%;margin-top:8px}
+.wide{padding:18px;font-size:1.4rem;font-weight:900;color:#fff}
+.wide.light{--b:#fff7ea;--sh:#ead7b7;color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:center;align-items:center;color:var(--muted);font-weight:800;font-size:.9rem;margin-top:6px}
+.legend .dot{width:16px;height:16px;vertical-align:-2px;margin-right:4px}
+
+/* Erkunden */
+.tools{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.tool{padding:12px 20px;font-weight:900;font-size:1.2rem;--b:#fff7ea;--sh:#ead7b7;border:4px solid transparent}
+.tool.sel{border-color:var(--orange);--b:#fff}
+
+/* Fenster & Meldungen */
+.overlay{position:fixed;inset:0;background:rgba(59,47,42,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:40}
+.modal{background:#fff;border-radius:32px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 10px 0 rgba(0,0,0,.12);display:flex;flex-direction:column;gap:14px}
+.modal h3{margin:0;font-size:1.5rem;font-weight:900}
+.modal p,.modal li{margin:0;font-weight:700;color:#5d4d43;line-height:1.4}
+.modal ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px}
+.modal label{font-weight:900}
+.modal input{width:100%;padding:14px 16px;border-radius:18px;border:3px solid var(--line);font-size:1.2rem;font-weight:800;color:var(--ink);background:#fffaf2;outline:none}
+.modal input:focus{border-color:var(--orange)}
+.small{font-size:.85rem;color:var(--muted)!important}
+.mbtns{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;margin-top:6px}
+.mbtn{padding:14px 22px;font-weight:900;font-size:1.15rem;--b:#fff7ea;--sh:#ead7b7}
+.mbtn.go{--b:var(--green);--sh:var(--green-d);color:#fff}
+.mbtn.stop{--b:var(--red);--sh:var(--red-d);color:#fff}
+#toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%) translateY(200%);visibility:hidden;background:var(--ink);color:#fff;font-weight:900;font-size:1.1rem;padding:14px 22px;border-radius:20px;z-index:60;transition:transform .25s;max-width:92vw;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0);visibility:visible}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px) rotate(-6deg)}}
+@keyframes shrink{from{width:100%}to{width:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="fileIn" accept="application/pdf,.pdf" hidden>
+<script>
+'use strict';
+/* =========================================================
+   Rechentrainer 1 – Zahlenraum bis 20
+   Keine Speicherung im Browser, keine Cookies, kein Netzwerk.
+   Der Lernstand lebt nur im Arbeitsspeicher und im PDF.
+   ========================================================= */
+
+const $app = document.getElementById('app');
+const fileIn = document.getElementById('fileIn');
+const toastEl = document.getElementById('toast');
+
+const MODULES = [
+  {id:1,  title:'Zahlen darstellen', sub:'Wie viele Plättchen?',   icon:'🔢', color:'#f5a524'},
+  {id:2,  title:'Kraft der 5 & 10',  sub:'Schnell sehen',          icon:'🖐️', color:'#ff8a3d'},
+  {id:3,  title:'Zahlen zerlegen',   sub:'Zahlenhäuser',           icon:'🏠', color:'#22b07d'},
+  {id:4,  title:'Verliebte Zahlen',  sub:'Zusammen immer 10',      icon:'💞', color:'#ef4b5c'},
+  {id:5,  title:'Ergänzen bis 20',   sub:'Wie viele fehlen?',      icon:'🧩', color:'#6d6af2'},
+  {id:6,  title:'Verdoppeln',        sub:'Doppelt so viele',       icon:'👯', color:'#3d8bfd'},
+  {id:7,  title:'Halbieren',         sub:'Gerecht teilen',         icon:'⚖️', color:'#0fb5cf'},
+  {id:8,  title:'Plus im 20er-Feld', sub:'Dazulegen',              icon:'➕', color:'#14a89a'},
+  {id:9,  title:'Minus im 20er-Feld',sub:'Wegnehmen',              icon:'➖', color:'#a259f0'},
+  {id:10, title:'Tausch & Umkehr',   sub:'Verwandte Aufgaben',     icon:'🔄', color:'#d946c8'}
+];
+const MOD = id => MODULES.find(m => m.id === id);
+const LEVELS = [null, {e:'🌱', n:'Leicht'}, {e:'🌿', n:'Mittel'}, {e:'🌳', n:'Schwer'}];
+const LDESC = {
+  1:['Zahlen bis 10','Zahlen bis 20','Bis 20 – durcheinander'],
+  2:['5 und noch etwas','10 und noch etwas','Gemischt, eine Farbe'],
+  3:['Zahlen bis 6','Zahlen bis 10','Bis 20 – im Kopf'],
+  4:['Mit Hilfspunkten','Ohne Hilfspunkte','Im Kopf, auch minus'],
+  5:['Ab 15 bis 20','Ab 10 bis 20','Zu jeder Zahl – im Kopf'],
+  6:['Bis 5 + 5','Bis 10 + 10','Im Kopf + fast verdoppeln'],
+  7:['Bis 10','Bis 20','Im Kopf'],
+  8:['Bis 10','Bis 20, nicht über die 10','Über die 10 – im Kopf'],
+  9:['Bis 10','Bis 20, nicht über die 10','Über die 10 – im Kopf'],
+  10:['Tauschaufgaben','Umkehraufgaben','Gemischt bis 20 – im Kopf']
+};
+const BLITZ_MS = [0, 3000, 2000, 1300];
+const ROUND = 10;
+const PRAISE = ['Super! 🌟','Richtig! 👍','Toll gemacht! 🎉','Klasse! ⭐','Genau! 💪','Prima! 😊','Stark! 🚀'];
+const PRAISE2 = ['Jetzt stimmt es! 👍','Gut korrigiert! 😊','Geschafft! 💪'];
+
+/* ---------------- Töne (werden im Gerät erzeugt) ---------------- */
+const snd = {
+  ctx:null, on:true,
+  init(){ if(!this.ctx){ const A = window.AudioContext||window.webkitAudioContext; if(A) this.ctx = new A(); } if(this.ctx && this.ctx.state==='suspended') this.ctx.resume(); },
+  tone(freq, delay, dur, type='sine', vol=.18, freq2){
+    if(!this.on) return; this.init(); const c=this.ctx; if(!c) return;
+    const t=c.currentTime+delay, o=c.createOscillator(), g=c.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,t); if(freq2) o.frequency.exponentialRampToValueAtTime(freq2,t+dur);
+    g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+.02);
+  },
+  tap(){ this.tone(440,0,.06,'sine',.12,250); },
+  ok(){ [523.25,659.25,783.99,1046.5].forEach((f,i)=>this.tone(f,i*.08,.22,'triangle',.18)); },
+  bad(){ this.tone(300,0,.3,'triangle',.16,190); },
+  star(){ [587.33,880,1174.66,1760].forEach((f,i)=>this.tone(f,i*.1,.35,'sine',.18)); }
+};
+
+/* ---------------- Vorlesen (nur lokale Gerätestimmen) ---------------- */
+let ttsVoice = null;
+function pickVoice(){
+  try{
+    const vs = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+    ttsVoice = vs.find(v => v.lang && v.lang.toLowerCase().startsWith('de') && v.localService === true) || null;
+  }catch(e){ ttsVoice = null; }
+}
+if(window.speechSynthesis){
+  pickVoice();
+  if(speechSynthesis.addEventListener) speechSynthesis.addEventListener('voiceschanged', () => { const had=!!ttsVoice; pickVoice(); if(!had && ttsVoice && st.screen==='play') render(); });
+}
+function speak(text){
+  if(!ttsVoice) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.voice = ttsVoice; u.lang = ttsVoice.lang; u.rate = .9;
+  speechSynthesis.speak(u);
+}
+
+/* ---------------- Hilfsfunktionen ---------------- */
+const R = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const S = {s:1}; // Platzhalter für die Antwort
+
+function cellsBlank(){ return Array.from({length:20}, () => ({c:'', x:false})); }
+// Der Reihe nach füllen: rot, blau, Hilfspunkte (leer gestrichelt); die letzten "struck" Plättchen werden durchgestrichen
+function fSeq(red, blue=0, struck=0, ghost=0){
+  const c = cellsBlank(); let i=0;
+  for(let k=0;k<red&&i<20;k++) c[i++].c='r';
+  for(let k=0;k<blue&&i<20;k++) c[i++].c='b';
+  const filled=i;
+  for(let k=0;k<ghost&&i<20;k++) c[i++].c='g';
+  for(let k=0;k<struck;k++){ const j=filled-1-k; if(j>=0) c[j].x=true; }
+  return c;
+}
+// Doppelreihe: oben rot, unten blau
+function fRows(top, bot){ const c=cellsBlank(); for(let i=0;i<top;i++) c[i].c='r'; for(let i=0;i<bot;i++) c[10+i].c='b'; return c; }
+function fScatter(n){
+  const idx=[...Array(20).keys()];
+  for(let i=idx.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [idx[i],idx[j]]=[idx[j],idx[i]]; }
+  const c=cellsBlank(); for(let i=0;i<n;i++) c[idx[i]].c='r'; return c;
+}
+function T(q, parts, answer, cells, o={}){ return Object.assign({q, parts, answer, cells, hidden:false, hint:'', ref:null, house:null}, o); }
+
+/* ---------------- Aufgaben: 10 Übungen × 3 Stufen ---------------- */
+function gen(m, L){
+  switch(m){
+    case 1: {
+      if(L===1){ const n=R(1,10); return T('Wie viele Plättchen siehst du?',[S],n,fSeq(n),{hint:'Wo ist die 5? Zähle von dort weiter.'}); }
+      if(L===2){ const n=R(8,20); return T('Wie viele Plättchen siehst du?',[S],n,fSeq(n),{hint:'Eine volle Reihe sind 10.'}); }
+      const n=R(5,18); return T('Wie viele sind es? Sie liegen durcheinander!',[S],n,fScatter(n),{hint:'Zähle zuerst die obere Reihe, dann die untere.'});
+    }
+    case 2: {
+      if(L===1){ const x=R(1,5); return T('Kraft der 5: Fünf und wie viele noch?',[5,'+',S,'=',5+x],x,fSeq(5,x),{hint:'Die roten sind 5. Wie viele blaue?'}); }
+      if(L===2){ const x=R(1,10); return T('Kraft der 10: Zehn und wie viele noch?',[10,'+',S,'=',10+x],x,fSeq(10,x),{hint:'Die obere Reihe ist voll: das sind 10.'}); }
+      const v=R(1,3);
+      if(v===1){ const n=R(6,19); return T('Wie viele? Denk an die 5 und die 10!',[S],n,fSeq(n),{hint:'Volle Reihe = 10. Halbe Reihe = 5.'}); }
+      if(v===2){ const b=pick([5,10]); const x=b===5?R(1,4):R(1,9); return T('Welche Zahl fehlt?',[S,'+',x,'=',b+x],b,fSeq(b+x),{hint:`Wie viele sind es bis zur ${b===5?'Fünf':'Zehn'}?`}); }
+      const x=R(1,9); return T('Wie viele sind es zusammen?',[10,'+',x,'=',S],10+x,fSeq(10+x),{hint:'Zehn und noch ein paar.'});
+    }
+    case 3: {
+      const total = L===1?R(3,6):L===2?R(7,10):R(11,20);
+      const a = L===3 ? R(Math.max(1,total-10), Math.min(10,total-1)) : L===2 ? R(0,total) : R(1,total-1);
+      const b = total-a;
+      const leftGap = L===3 && Math.random()<.4;
+      const parts = leftGap ? [total,'=',S,'+',b] : [total,'=',a,'+',S];
+      const cells = L===2 ? fSeq(a) : leftGap ? fSeq(0,b,0,a) : fSeq(a,0,0,b);
+      return T(`Zerlege die ${total}!`, parts, leftGap?a:b, cells,
+        {hidden:L===3, house:{total, left:leftGap?S:a, right:leftGap?b:S}, hint:`Zähle weiter bis ${total}.`});
+    }
+    case 4: {
+      if(L===1){ const a=R(1,9); return T('Verliebte Zahlen: Zusammen sind es 10.',[a,'+',S,'=',10],10-a,fSeq(a,0,0,10-a),{hint:'Zähle die leeren Kreise.'}); }
+      if(L===2){ const a=R(0,10), sw=Math.random()<.4; return T('Welche Zahl ist verliebt?', sw?[S,'+',a,'=',10]:[a,'+',S,'=',10],10-a,fSeq(a),{hint:'Wie viele fehlen, bis die Reihe voll ist?'}); }
+      const a=R(1,9), v=R(1,3);
+      if(v===3) return T('Wie viele bleiben übrig?',[10,'−',a,'=',S],10-a,fSeq(10,0,a),{hidden:true,hint:`Welche Zahl ist mit der ${a} verliebt?`});
+      return T('Verliebte Zahlen im Kopf!', v===1?[a,'+',S,'=',10]:[S,'+',a,'=',10],10-a,fSeq(a,0,0,10-a),{hidden:true,hint:'Zusammen immer 10!'});
+    }
+    case 5: {
+      if(L===1){ const a=R(15,19); return T('Wie viele fehlen bis 20?',[a,'+',S,'=',20],20-a,fSeq(a,0,0,20-a),{hint:'Zähle die leeren Kreise.'}); }
+      if(L===2){ const a=R(10,19); return T('Wie viele fehlen bis 20?',[a,'+',S,'=',20],20-a,fSeq(a),{hint:'Wie viele Kreise sind noch frei?'}); }
+      const t=R(11,20), a=R(Math.max(1,t-10),t-2);
+      return T('Wie viele fehlen?',[a,'+',S,'=',t],t-a,fSeq(a,0,0,t-a),{hidden:true,
+        hint: a<10 ? `Erst bis 10, dann weiter bis ${t}.` : `Zähle von ${a} weiter bis ${t}.`});
+    }
+    case 6: {
+      if(L===1){ const v=R(1,5); return T(`Verdopple die ${v}!`,[v,'+',v,'=',S],2*v,fRows(v,v),{hint:'Oben und unten gleich viele.'}); }
+      if(L===2){ const v=R(3,10); return T(`Verdopple die ${v}!`,[v,'+',v,'=',S],2*v,fRows(v,v),{hint: v>5?'Denk an die 5: 5 + 5 = 10.':'Zähle beide Reihen zusammen.'}); }
+      if(Math.random()<.5){ const v=R(4,10); return T(`Verdopple die ${v} im Kopf!`,[v,'+',v,'=',S],2*v,fRows(v,v),{hidden:true,hint:'5 + 5 = 10 hilft dir.'}); }
+      const a=R(2,9); return T('Fast verdoppeln!',[a,'+',a+1,'=',S],2*a+1,fRows(a,a+1),{hidden:true,hint:`Rechne zuerst ${a} + ${a}. Dann 1 mehr.`});
+    }
+    case 7: {
+      const h = L===1 ? R(1,5) : L===2 ? R(1,10) : R(2,10), t=2*h;
+      return T(`Halbiere die ${t}!`,[t,'=',S,'+',S],h, L===2?fSeq(t):fRows(h,h), {hidden:L===3,hint:'Beide Teile sind gleich gross.'});
+    }
+    case 8: {
+      if(L===1){ const a=R(1,8), b=R(1,10-a); return T('Lege dazu. Wie viele sind es?',[a,'+',b,'=',S],a+b,fSeq(a,b),{hint:'Zähle rot und blau zusammen.'}); }
+      if(L===2){ const a=R(11,17), b=R(1,19-a); return T('Rechne die Plus-Aufgabe.',[a,'+',b,'=',S],a+b,fSeq(a,b),{hint:`Rechne ${a-10} + ${b}. Die 10 bleibt.`}); }
+      const a=R(3,9), b=R(11-a,9);
+      return T('Plus über die 10!',[a,'+',b,'=',S],a+b,fSeq(a,b),{hidden:true,hint:`Fülle zuerst die 10 auf: ${a} + ${10-a} = 10. Dann noch ${b-(10-a)} dazu.`});
+    }
+    case 9: {
+      if(L===1){ const a=R(2,10), b=R(1,a); return T('Nimm die durchgestrichenen weg.',[a,'−',b,'=',S],a-b,fSeq(a,0,b),{hint:'Zähle nur die Plättchen ohne ✕.'}); }
+      if(L===2){ const a=R(11,19), b=R(1,a-10); return T('Nimm weg!',[a,'−',b,'=',S],a-b,fSeq(a,0,b),{hint:`Rechne ${a-10} − ${b}. Die 10 bleibt.`}); }
+      const a=R(11,18), b=R(a-9,9);
+      return T('Minus über die 10!',[a,'−',b,'=',S],a-b,fSeq(a,0,b),{hidden:true,hint:`Zuerst bis zur 10: ${a} − ${a-10} = 10. Dann noch ${b-(a-10)} weg.`});
+    }
+    default: {
+      const tausch = (a,b,hid) => T('Tauschaufgabe: Die Zahlen tauschen den Platz!',[b,'+',a,'=',S],a+b,fSeq(b,a),{ref:[a,'+',b,'=',a+b],hidden:hid,hint:'Tauschen ändert das Ergebnis nicht.'});
+      const umkehr = (a,b,hid) => T('Umkehraufgabe: Rechne zurück!',[a+b,'−',b,'=',S],a,fSeq(a+b,0,b),{ref:[a,'+',b,'=',a+b],hidden:hid,hint:'Die Aufgaben sind verwandt. Schau die grüne Aufgabe an!'});
+      if(L===1){ let a,b; do{ a=R(1,8); b=R(1,10-a); }while(a===b); return tausch(a,b,false); }
+      if(L===2){ const a=R(1,8), b=R(1,10-a); return umkehr(a,b,false); }
+      const a=R(2,10), b=R(2,Math.min(10,20-a)), v=R(1,3);
+      return v===1 ? tausch(a,b,true) : v===2 ? umkehr(a,b,true) : umkehr(b,a,true);
+    }
+  }
+}
+const taskKey = t => JSON.stringify(t.parts.map(p => p===S?'?':p)) + '|' + t.answer + (t.ref?'r':'');
+function makeTasks(m, L){
+  const out=[], seen=new Set(); let guard=0;
+  while(out.length<ROUND && guard<400){
+    guard++;
+    const t=gen(m,L), k=taskKey(t);
+    if(out.length && taskKey(out[out.length-1])===k) continue;   // nie zweimal gleich hintereinander
+    if(seen.has(k) && guard<200) continue;                         // möglichst abwechslungsreich
+    seen.add(k); out.push(t);
+  }
+  return out;
+}
+
+/* ---------------- Zustand (nur im Arbeitsspeicher) ---------------- */
+const st = {
+  screen:'home', m:1, L:1, mode:'practice', sound:true,
+  progress:{}, stars:0, name:'', dirty:false,
+  round:null, tool:'r', sandbox:cellsBlank(), modal:null
+};
+let blitzTimer=null, nextTimer=null, toastTimer=null;
+const blank = () => ({r:0,b:0,bb:0,t:0,c:0});
+function prog(m,L){ const pm = st.progress[m] || (st.progress[m]={}); return pm[L] || (pm[L]=blank()); }
+function peek(m,L){ return (st.progress[m] && st.progress[m][L]) || blank(); }
+function lvState(m,L){ const p=peek(m,L); return p.b>=8 ? 'done' : p.r>0 ? 'played' : 'open'; }
+function recLevel(m){ for(let L=1;L<=3;L++) if(lvState(m,L)!=='done') return L; return 3; }
+function clearTimers(){ clearTimeout(blitzTimer); clearTimeout(nextTimer); }
+
+/* ---------------- Ansichten ---------------- */
+function render(){
+  let h='';
+  if(st.screen==='home') h=homeV();
+  else if(st.screen==='module') h=moduleV();
+  else if(st.screen==='play') h=playV();
+  else if(st.screen==='end') h=endV();
+  else if(st.screen==='explore') h=exploreV();
+  if(st.modal) h += modalV();
+  $app.innerHTML = `<div class="wrap">${h}</div>`;
+}
+
+function homeV(){
+  return `
+  <header class="topbar">
+    <div class="logo"><div class="face">🦊</div><div><div class="t1">Rechentrainer</div><div class="t2">Zahlenraum bis 20</div></div></div>
+    <div class="spacer"></div>
+    <div class="pill" aria-label="Sterne">⭐ <b>${st.stars}</b></div>
+    <button class="btn iconbtn" data-a="sound" aria-label="Ton ein oder aus">${st.sound?'🔊':'🔇'}</button>
+  </header>
+  <div class="hello"><span class="fox">🦊</span><div class="bubble">Hallo${st.name?' '+esc(st.name):''}! Was möchtest du heute üben?</div></div>
+  <div class="tiles">${MODULES.map(m => `
+    <button class="btn tile" data-a="openMod" data-m="${m.id}" style="--c:${m.color}">
+      <span class="num">${m.id}</span><span class="ic">${m.icon}</span>
+      <span class="tt">${m.title}</span><span class="st">${m.sub}</span>
+      <span class="pips">${[1,2,3].map(L=>`<i class="pip ${lvState(m.id,L)}"></i>`).join('')}</span>
+    </button>`).join('')}
+  </div>
+  <section class="save">
+    <div class="savetxt"><b>📄 Lernstand</b>
+      ${st.dirty ? '<span class="warn">Speichere deinen Fortschritt als PDF, bevor du die App schliesst.</span>'
+                 : '<span>Speichern und Weitermachen geht nur mit dem PDF.</span>'}
+    </div>
+    <div class="savebtns">
+      <button class="btn sbtn green" data-a="saveOpen">📄 PDF speichern</button>
+      <button class="btn sbtn" data-a="load">📂 PDF laden</button>
+      <button class="btn sbtn" data-a="info">ℹ️ Für Erwachsene</button>
+    </div>
+  </section>
+  <p class="privacy">🔒 Diese App speichert nichts und sendet nichts ins Internet.</p>`;
+}
+
+function moduleV(){
+  const m=MOD(st.m), rec=recLevel(m.id);
+  return `
+  <header class="topbar">
+    <button class="btn iconbtn" data-a="home" aria-label="Zur Übersicht">🏠</button>
+    <div class="modhead" style="--c:${m.color}"><span class="ic sm">${m.icon}</span><div><div class="t2">Übung ${m.id}</div><div class="t1">${m.title}</div></div></div>
+    <div class="spacer"></div>
+    <div class="pill">⭐ <b>${st.stars}</b></div>
+  </header>
+  <div class="h2">1. Wähle deine Stufe</div>
+  <div class="levels">${[1,2,3].map(L => {
+    const p=peek(m.id,L), s=lvState(m.id,L);
+    const stt = s==='done' ? `✅ Geschafft (${p.b}/10)` : s==='played' ? (p.b>0?`Bestes: ${p.b}/10`:'Geübt') : 'Neu';
+    return `<button class="btn level ${st.L===L?'sel':''} ${s}" style="--c:${m.color}" data-a="level" data-l="${L}">
+      ${L===rec && s!=='done' ? '<span class="tip">⭐ Tipp</span>' : ''}
+      <span class="em">${LEVELS[L].e}</span><span class="nm">${LEVELS[L].n}</span>
+      <span class="ds">${LDESC[m.id][L-1]}</span>
+      <span class="stt">${stt}${p.bb>0?` · ⚡${p.bb}`:''}</span></button>`;
+  }).join('')}</div>
+  <div class="h2">2. Wie möchtest du üben?</div>
+  <div class="modes">
+    <button class="btn mode" style="--b:var(--green);--sh:var(--green-d)" data-a="start" data-mode="practice">✏️ Üben<small>10 Aufgaben</small></button>
+    <button class="btn mode" style="--b:var(--blue);--sh:var(--blue-d)" data-a="start" data-mode="blitz">⚡ Blitz<small>Nur kurz schauen</small></button>
+    <button class="btn mode" style="--b:var(--orange);--sh:#d96a1f" data-a="explore">🎨 Erkunden<small>Frei legen</small></button>
+  </div>`;
+}
+
+function frameV(cells, interactive=false){
+  let h='';
+  for(let row=0;row<2;row++) for(let col=0;col<10;col++){
+    if(col===5) h+='<span class="sep"></span>';
+    const i=row*10+col, c=cells[i];
+    const disc = c.c ? `<span class="d ${c.c}${c.x?' x':''}"></span>` : '';
+    h += interactive ? `<button class="cell" data-a="cell" data-i="${i}" aria-label="Feld ${i+1}">${disc}</button>` : `<span class="cell">${disc}</span>`;
+  }
+  return `<div class="frame"><div class="fgrid">${h}</div></div>`;
+}
+function slotCls(){ const r=st.round; if(r.phase==='correct') return 'ok'; if(r.phase==='reveal') return 'rev'; if(r.shake) return 'bad'; return r.input===''?'empty':''; }
+function slotTxt(){ return st.round.input==='' ? '?' : st.round.input; }
+function tokV(p){
+  if(p===S) return `<span class="slot ${slotCls()}" data-slot>${slotTxt()}</span>`;
+  if(typeof p==='number') return `<span class="n">${p}</span>`;
+  return `<span class="op">${p}</span>`;
+}
+function houseV(h){
+  const room = (v,cls) => v===S ? `<span class="room ${cls}" data-room>${slotTxt()}</span>` : `<span class="room ${cls}">${v}</span>`;
+  return `<div class="house"><div class="roof"><span>${h.total}</span></div><div class="rooms">${room(h.left,'l')}${room(h.right,'r')}</div></div>`;
+}
+function updateSlots(){
+  document.querySelectorAll('[data-slot]').forEach(el => { el.textContent=slotTxt(); el.className='slot '+slotCls(); });
+  document.querySelectorAll('[data-room]').forEach(el => { el.textContent=slotTxt(); });
+}
+function padV(){
+  const r=st.round, lock = r.phase==='correct' || r.phase==='reveal', dis = lock?'disabled':'';
+  let k='';
+  for(const d of [1,2,3,4,5,6,7,8,9]) k+=`<button class="btn key" data-a="d" data-d="${d}" ${dis}>${d}</button>`;
+  k+=`<button class="btn key del" data-a="del" ${dis} aria-label="Löschen">⌫</button>`;
+  k+=`<button class="btn key" data-a="d" data-d="0" ${dis}>0</button>`;
+  k+=`<button class="btn key ok" data-a="ok" ${dis} aria-label="Prüfen">✓</button>`;
+  if(r.phase==='reveal') k+=`<button class="btn next" data-a="next">Weiter ➜</button>`;
+  return `<div class="pad">${k}</div>`;
+}
+
+function playV(){
+  const r=st.round, t=r.cur, m=MOD(st.m);
+  const dots = r.results.map((v,i)=>`<i class="dot ${v||''} ${(!t.retry && t.oi===i)?'cur':''}"></i>`).join('');
+  let pic;
+  if(r.frameHidden){
+    pic = st.mode==='blitz'
+      ? `<div class="hidecard"><span class="big">☁️</span>Was hast du gesehen?<button class="btn smallbtn" data-a="peek">👀 Nochmal zeigen</button></div>`
+      : `<div class="hidecard"><span class="big">🧠</span>Rechne im Kopf!<button class="btn smallbtn" data-a="help">💡 Hilfe</button></div>`;
+  } else {
+    pic = frameV(t.cells);
+    const left = r.blitzEnd - Date.now();
+    if(st.mode==='blitz' && left>0) pic += `<div class="timebar"><i style="animation-duration:${r.blitzMs}ms;animation-delay:-${r.blitzMs-left}ms"></i></div>`;
+  }
+  return `
+  <header class="topbar">
+    <button class="btn iconbtn" data-a="quit" aria-label="Runde beenden">🏠</button>
+    <div class="tag">${m.icon} ${LEVELS[st.L].e}${st.mode==='blitz'?' ⚡':''}</div>
+    <div class="spacer"></div>
+    <div class="dots" aria-label="Fortschritt">${dots}</div>
+  </header>
+  <div class="playgrid">
+    <section class="taskcard">
+      <div class="qrow">
+        ${ttsVoice?'<button class="btn speak" data-a="speak" aria-label="Vorlesen">🔊</button>':''}
+        <div class="q">${t.q}</div>
+        ${t.retry?'<span class="badge">🔁 Nochmal</span>':''}
+      </div>
+      ${t.ref?`<div class="ref">${t.ref.join(' ')}</div>`:''}
+      ${t.house?houseV(t.house):''}
+      ${pic}
+      <div class="formula">${t.parts.map(tokV).join('')}</div>
+      ${r.msg?`<div class="mascot"><span class="fox ${r.mood}">🦊</span><div class="bubble">${r.msg}</div></div>`:''}
+    </section>
+    <section class="padarea">${padV()}</section>
+  </div>`;
+}
+
+function endV(){
+  const r=st.round, s=r.score, n = s>=9?3 : s>=7?2 : s>=4?1 : 0;
+  const msg = s>=9?'Wow, super gemacht!' : s>=7?'Sehr gut!' : s>=4?'Gut geübt! Weiter so.' : 'Das war schwierig. Übe nochmal in Ruhe.';
+  const up = s>=8 && st.L<3, down = s<=4 && st.L>1;
+  return `
+  <div class="end">
+    <span class="fox big hop">🦊</span>
+    <div class="bigstars">${[1,2,3].map(i=>`<span class="${i<=n?'':'off'}">⭐</span>`).join('')}</div>
+    <div class="score">${s} von 10 richtig</div>
+    <div class="sub">${msg}</div>
+    <div class="dots bigd">${r.results.map(v=>`<i class="dot ${v||''}"></i>`).join('')}</div>
+    ${s>=8 && st.mode==='practice' ? `<div class="won">${LEVELS[st.L].e} Stufe «${LEVELS[st.L].n}» geschafft!</div>` : ''}
+    <div class="endbtns">
+      ${up?`<button class="btn wide" style="--b:var(--green);--sh:var(--green-d)" data-a="up">Nächste Stufe ${LEVELS[st.L+1].e} ➜</button>`:''}
+      ${down?`<button class="btn wide" style="--b:var(--yellow);--sh:#d9a514;color:#5a3d00" data-a="down">Etwas leichter ${LEVELS[st.L-1].e}</button>`:''}
+      <button class="btn wide" style="--b:var(--blue);--sh:var(--blue-d)" data-a="again">🔁 Nochmal</button>
+      <button class="btn wide light" data-a="toModule">Andere Stufe</button>
+      <button class="btn wide light" data-a="home">🏠 Übersicht</button>
+    </div>
+    <div class="legend"><span><i class="dot g"></i>sofort richtig</span><span><i class="dot y"></i>mit Hilfe</span><span><i class="dot o"></i>nochmal geübt</span></div>
+  </div>`;
+}
+
+function exploreV(){
+  const c=st.sandbox, red=c.filter(x=>x.c==='r').length, blue=c.filter(x=>x.c==='b').length;
+  const tools=[['r','🔴','Rot'],['b','🔵','Blau'],['e','🧽','Weg']];
+  return `
+  <header class="topbar">
+    <button class="btn iconbtn" data-a="toModule" aria-label="Zurück">⬅️</button>
+    <div class="t1">🎨 Erkunden</div>
+  </header>
+  <section class="taskcard">
+    <div class="q center">Tippe auf die Kreise und lege Plättchen!</div>
+    <div class="tools">${tools.map(([k,e,n])=>`<button class="btn tool ${st.tool===k?'sel':''}" data-a="tool" data-t="${k}">${e} ${n}</button>`).join('')}</div>
+    ${frameV(c,true)}
+    <div class="formula"><span class="n red">${red}</span><span class="op">+</span><span class="n blue">${blue}</span><span class="op">=</span><span class="n">${red+blue}</span></div>
+    <div class="tools">
+      <button class="btn tool" data-a="fill5">🖐️ 5 rote</button>
+      <button class="btn tool" data-a="fill10">🙌 10 rote</button>
+      <button class="btn tool" data-a="rand">🎲 Zufall</button>
+      <button class="btn tool" data-a="clear">🧹 Leeren</button>
+    </div>
+  </section>`;
+}
+
+function modalV(){
+  if(st.modal==='quit') return `
+    <div class="overlay"><div class="modal">
+      <h3>Runde beenden?</h3><p>Die angefangene Runde zählt dann nicht.</p>
+      <div class="mbtns"><button class="btn mbtn" data-a="closeModal">Weiter üben</button><button class="btn mbtn stop" data-a="quitYes">Ja, beenden</button></div>
+    </div></div>`;
+  if(st.modal==='save') return `
+    <div class="overlay"><div class="modal">
+      <h3>📄 Lernstand als PDF speichern</h3>
+      <p>Das PDF zeigt, was du schon kannst. Mit diesem PDF kannst du später weitermachen.</p>
+      <label for="nameIn">Name (freiwillig)</label>
+      <input id="nameIn" type="text" maxlength="30" autocomplete="off" autocorrect="off" spellcheck="false" value="${esc(st.name)}" placeholder="z. B. Lea">
+      <p class="small">Der Name steht nur im PDF. Die App speichert ihn nirgends.</p>
+      <div class="mbtns"><button class="btn mbtn" data-a="closeModal">Abbrechen</button><button class="btn mbtn go" data-a="savePdf">📄 PDF erstellen</button></div>
+    </div></div>`;
+  if(st.modal==='info') return `
+    <div class="overlay"><div class="modal">
+      <h3>ℹ️ Für Eltern und Lehrpersonen</h3>
+      <ul>
+        <li><b>10 Übungen</b> zum Zahlenraum bis 20 – mit 20er-Feld, Kraft der 5, Zerlegen, Verdoppeln, Halbieren, Plus, Minus, Tausch- und Umkehraufgaben.</li>
+        <li><b>3 Stufen pro Übung:</b> 🌱 Leicht – vollständiges Bild und Hilfspunkte. 🌿 Mittel – grösserer Zahlenraum, weniger Hilfen. 🌳 Schwer – im Kopf; das Bild erscheint nur auf Wunsch (💡).</li>
+        <li><b>Eine Runde hat 10 Aufgaben.</b> Nach einem Fehler gibt es einen Tipp, nach dem zweiten die Lösung. Die Aufgabe kommt später in der Runde nochmals.</li>
+        <li><b>Geschafft</b> ist eine Stufe bei mindestens 8 von 10 Aufgaben, die beim ersten Versuch und ohne Hilfe richtig waren. Der «Tipp»-Stern zeigt die empfohlene nächste Stufe.</li>
+        <li><b>Blitz:</b> Das Bild ist nur kurz sichtbar (3 / 2 / 1,3 Sekunden). Das trainiert das schnelle Erfassen von Mengen statt Abzählen.</li>
+        <li><b>Datenschutz:</b> keine Speicherung im Browser, keine Cookies, keine Verbindung ins Internet. Beim Schliessen ist alles weg – ausser im gespeicherten PDF.</li>
+        <li><b>Weitermachen:</b> «PDF speichern», später «PDF laden» und die Datei wählen.</li>
+      </ul>
+      <div class="mbtns"><button class="btn mbtn go" data-a="closeModal">Alles klar</button></div>
+    </div></div>`;
+  return '';
+}
+
+function toast(msg){
+  toastEl.textContent = msg; toastEl.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2800);
+}
+
+/* ---------------- Spielablauf ---------------- */
+function startRound(){
+  clearTimers();
+  const tasks = makeTasks(st.m, st.L);
+  st.round = { list: tasks.map((t,i)=>Object.assign({}, t, {oi:i, retry:false})), pos:0, results:Array(ROUND).fill(null), streak:0 };
+  st.screen='play'; beginTask();
+}
+function beginTask(){
+  const r=st.round;
+  r.cur=r.list[r.pos]; r.input=''; r.tries=0; r.help=false; r.phase='ask'; r.msg=''; r.mood=''; r.shake=false;
+  r.frameHidden = st.mode==='practice' && r.cur.hidden; r.blitzEnd=0;
+  if(st.mode==='blitz') startBlitz();
+  render();
+}
+function startBlitz(){
+  const r=st.round; clearTimeout(blitzTimer);
+  const ms=BLITZ_MS[st.L]; r.frameHidden=false; r.blitzMs=ms; r.blitzEnd=Date.now()+ms;
+  blitzTimer = setTimeout(() => {
+    if(st.round!==r || st.screen!=='play' || !['ask','wrong1'].includes(r.phase)) return;
+    r.frameHidden=true; r.blitzEnd=0; render();
+  }, ms);
+}
+function digit(d){
+  const r=st.round; if(!r || !['ask','wrong1'].includes(r.phase)) return;
+  snd.tap();
+  if(r.input==='0') r.input=String(d); else if(r.input.length<2) r.input+=String(d);
+  r.shake=false; updateSlots();
+}
+function delDigit(){ const r=st.round; if(!r || !['ask','wrong1'].includes(r.phase)) return; snd.tap(); r.input=r.input.slice(0,-1); updateSlots(); }
+function submit(){
+  const r=st.round; if(!r || !['ask','wrong1'].includes(r.phase) || r.input==='') return;
+  const t=r.cur, v=parseInt(r.input,10);
+  clearTimeout(blitzTimer); r.blitzEnd=0;
+  if(v===t.answer){
+    snd.ok(); r.phase='correct'; r.streak++; r.frameHidden=false; r.mood='hop';
+    const clean = r.tries===0 && !r.help;
+    if(!t.retry){ r.results[t.oi] = clean?'g':'y'; if(clean) st.stars++; }
+    r.msg = pick(clean?PRAISE:PRAISE2);
+    if(r.streak%5===0){ r.msg=`${r.streak} richtig hintereinander! 🎉`; setTimeout(()=>{ snd.star(); confetti(); },250); }
+    render(); nextTimer=setTimeout(nextTask, 1150);
+  } else {
+    r.tries++; r.streak=0; snd.bad();
+    if(r.tries===1){
+      r.phase='wrong1'; r.input=''; r.shake=true; r.frameHidden=false; r.mood='';
+      r.msg = 'Fast! ' + (t.hint || 'Schau noch einmal genau.');
+      render();
+      setTimeout(()=>{ if(st.round===r && r.shake){ r.shake=false; updateSlots(); } }, 700);
+    } else {
+      r.phase='reveal'; r.input=String(t.answer); r.frameHidden=false; r.mood='';
+      if(!t.retry){
+        r.results[t.oi]='o';
+        r.list.splice(Math.min(r.pos+3, r.list.length), 0, Object.assign({}, t, {retry:true}));
+        r.msg=`Die Lösung ist ${t.answer}. Diese Aufgabe kommt gleich nochmal.`;
+      } else r.msg=`Die Lösung ist ${t.answer}.`;
+      render();
+    }
+  }
+}
+function nextTask(){
+  clearTimeout(nextTimer);
+  const r=st.round; if(!r || st.screen!=='play') return;
+  r.pos++;
+  if(r.pos>=r.list.length) endRound(); else beginTask();
+}
+function endRound(){
+  clearTimers();
+  const r=st.round, score=r.results.filter(x=>x==='g').length, p=prog(st.m,st.L);
+  p.r++; p.t+=ROUND; p.c+=score;
+  if(st.mode==='practice') p.b=Math.max(p.b,score); else p.bb=Math.max(p.bb,score);
+  r.score=score; st.dirty=true; st.screen='end';
+  if(score>=8) setTimeout(()=>{ snd.star(); confetti(); },200);
+  render();
+}
+function spoken(parts){ return parts.map(p => p===S?'wie viel' : p==='+'?'plus' : p==='−'?'minus' : p==='='?'gleich' : String(p)).join(' '); }
+
+function confetti(){
+  const cv=document.createElement('canvas'); cv.className='confetti'; document.body.appendChild(cv);
+  cv.width=innerWidth; cv.height=innerHeight; const ctx=cv.getContext('2d');
+  const cols=['#ef4b5c','#3d8bfd','#22b07d','#ffc531','#a259f0','#ff8a3d'];
+  const ps=Array.from({length:90},()=>({x:Math.random()*cv.width,y:-Math.random()*cv.height*.6,vx:(Math.random()-.5)*5,vy:Math.random()*4+3,s:Math.random()*10+7,c:pick(cols),r:Math.random()*6,vr:(Math.random()-.5)*.3}));
+  const t0=performance.now();
+  (function f(t){
+    ctx.clearRect(0,0,cv.width,cv.height); let alive=false;
+    for(const p of ps){ p.x+=p.vx; p.y+=p.vy; p.vy+=.05; p.r+=p.vr; if(p.y<cv.height+20) alive=true;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c; ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); ctx.restore(); }
+    if(alive && t-t0<4000) requestAnimationFrame(f); else cv.remove();
+  })(t0);
+}
+
+/* ---------------- PDF: Lernstand erzeugen (ohne Bibliothek) ---------------- */
+function pdfEsc(s){
+  return String(s).normalize('NFC')
+    .replace(/[\u2212\u2013\u2014]/g,'-').replace(/\u2026/g,'...').replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D\u201E]/g,'"')
+    .replace(/[^\x20-\x7E\xA0-\xFF]/g,'')
+    .replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+}
+const b64e = s => { const by=new TextEncoder().encode(s); let bin=''; by.forEach(b=>bin+=String.fromCharCode(b)); return btoa(bin); };
+const b64d = s => { const bin=atob(s), by=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) by[i]=bin.charCodeAt(i); return new TextDecoder().decode(by); };
+
+function makeReportPDF(){
+  const W=595.28, H=841.89, ops=[];
+  const f = n => (Math.round(n*100)/100).toString();
+  const col = c => c.map(v=>f(v/255)).join(' ');
+  const INK=[59,47,42], MUTED=[140,123,111], GREEN=[34,176,125], YEL=[255,197,49], GREY=[200,188,172];
+  const text = (x,y,s,size=10,bold=false,c=INK) => ops.push(`BT /${bold?'F2':'F1'} ${size} Tf ${col(c)} rg ${f(x)} ${f(H-y)} Td (${pdfEsc(s)}) Tj ET`);
+  const ctext = (cx,y,s,size=10,bold=false,c=INK) => text(cx - String(s).length*size*(bold?.29:.26), y, s, size, bold, c);
+  const rect = (x,y,w,h,c) => ops.push(`${col(c)} rg ${f(x)} ${f(H-y-h)} ${f(w)} ${f(h)} re f`);
+  const circ = (cx,cy,r) => { const k=.5523*r, Y=H-cy;
+    return `${f(cx+r)} ${f(Y)} m ${f(cx+r)} ${f(Y+k)} ${f(cx+k)} ${f(Y+r)} ${f(cx)} ${f(Y+r)} c ${f(cx-k)} ${f(Y+r)} ${f(cx-r)} ${f(Y+k)} ${f(cx-r)} ${f(Y)} c ${f(cx-r)} ${f(Y-k)} ${f(cx-k)} ${f(Y-r)} ${f(cx)} ${f(Y-r)} c ${f(cx+k)} ${f(Y-r)} ${f(cx+r)} ${f(Y-k)} ${f(cx+r)} ${f(Y)} c`; };
+  const dot = (cx,cy,r,fill,stroke) => { if(fill) ops.push(`${col(fill)} rg ${circ(cx,cy,r)} f`); if(stroke) ops.push(`1.3 w ${col(stroke)} RG ${circ(cx,cy,r)} S`); };
+  const star = (cx,cy,r,c) => { let p=''; for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rr=i%2?r*.45:r; p+=`${f(cx+rr*Math.cos(a))} ${f(H-(cy+rr*Math.sin(a)))} ${i?'l':'m'} `; } ops.push(`${col(c)} rg ${p}h f`); };
+  const line = (x1,y1,x2,y2,c,w=1) => ops.push(`${w} w ${col(c)} RG ${f(x1)} ${f(H-y1)} m ${f(x2)} ${f(H-y2)} l S`);
+  const wrap = (s,size,maxW) => { const maxC=Math.floor(maxW/(size*.5)); const out=[]; let cur='';
+    for(const w of s.split(' ')){ if((cur+' '+w).trim().length>maxC){ if(cur) out.push(cur); cur=w; } else cur=(cur+' '+w).trim(); }
+    if(cur) out.push(cur); return out; };
+  const hex = h => [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+
+  const date = new Date().toLocaleDateString('de-CH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  let doneLv=0, totT=0, totC=0;
+  MODULES.forEach(m=>[1,2,3].forEach(L=>{ const p=peek(m.id,L); if(p.b>=8) doneLv++; totT+=p.t; totC+=p.c; }));
+
+  // Kopf
+  rect(0,0,W,98,[255,236,196]);
+  star(54,46,17,YEL);
+  text(82,44, st.name?`Lernstand von ${st.name}`:'Mein Lernstand', 22, true);
+  text(82,64, 'Rechentrainer 1 · Zahlenraum bis 20', 11, false, MUTED);
+  text(82,80, 'Erstellt am '+date, 10, false, MUTED);
+
+  // Zusammenfassung
+  const bw=(W-80-24)/3, by=114;
+  [['Gesammelte Sterne', String(st.stars), [255,247,224]],
+   ['Geschaffte Stufen', `${doneLv} von 30`, [227,248,238]],
+   ['Beim 1. Versuch richtig', totT?`${Math.round(totC/totT*100)} %`:'-', [234,242,255]]]
+   .forEach(([lab,val,bg],i) => { const x=40+i*(bw+12); rect(x,by,bw,56,bg); text(x+12,by+18,lab,9,false,MUTED); if(i===0) star(x+22,by+38,10,YEL); text(x+(i===0?38:12),by+45,val,20,true); });
+
+  // Tabelle
+  const cols=[300,370,440], blitzX=515, ty=190;
+  rect(40,ty,W-80,24,[245,236,222]);
+  text(50,ty+16,'Übung',10,true);
+  ['Leicht','Mittel','Schwer'].forEach((n,i)=>ctext(cols[i],ty+16,n,10,true));
+  ctext(blitzX,ty+16,'Blitz',10,true);
+  const rowH=34, y0=ty+24;
+  MODULES.forEach((m,i) => {
+    const y=y0+i*rowH;
+    if(i%2) rect(40,y,W-80,rowH,[252,248,240]);
+    dot(52,y+17,6,hex(m.color));
+    text(66,y+15,`${m.id}. ${m.title}`,11,true);
+    text(66,y+27,m.sub,8.5,false,MUTED);
+    [1,2,3].forEach((L,j) => {
+      const p=peek(m.id,L), s=lvState(m.id,L), cx=cols[j];
+      if(s==='done'){ dot(cx-17,y+17,6,GREEN); text(cx-7,y+21,`${p.b}/10`,10,true); }
+      else if(s==='played'){ dot(cx-17,y+17,6,YEL); text(cx-7,y+21, p.b>0?`${p.b}/10`:'geübt', 10); }
+      else { dot(cx-17,y+17,5.5,null,GREY); text(cx-7,y+21,'offen',9,false,MUTED); }
+    });
+    let bb=0, bl=0; [1,2,3].forEach(L=>{ const p=peek(m.id,L); if(p.bb>=bb && p.bb>0){ bb=p.bb; bl=L; } });
+    ctext(blitzX,y+21, bb?`${bb}/10 (Stufe ${bl})`:'-', 9, false, bb?INK:MUTED);
+  });
+  const tEnd=y0+10*rowH;
+  line(40,tEnd,W-40,tEnd,[230,216,194]);
+
+  // Legende
+  const ly=tEnd+18;
+  dot(48,ly-3,5,GREEN); text(58,ly,'geschafft (mind. 8 von 10 beim 1. Versuch)',8.5,false,MUTED);
+  dot(250,ly-3,5,YEL);  text(260,ly,'geübt (bestes Ergebnis)',8.5,false,MUTED);
+  dot(370,ly-3,4.5,null,GREY); text(380,ly,'noch offen',8.5,false,MUTED);
+  text(440,ly,'Blitz: bestes Ergebnis',8.5,false,MUTED);
+
+  // Nächste Schritte
+  const steps=[], notStarted=[], mastered=[];
+  MODULES.forEach(m => {
+    if(![1,2,3].some(L=>peek(m.id,L).r>0)){ notStarted.push(m.id); return; }
+    if([1,2,3].every(L=>lvState(m.id,L)==='done')){ mastered.push(m.id); return; }
+    const L=recLevel(m.id); steps.push(`Übung ${m.id} «${m.title}»: weiter mit Stufe ${LEVELS[L].n}`);
+  });
+  const lines=[];
+  if(!steps.length && !mastered.length) lines.push('Noch keine Übungsrunde gespielt. Start-Tipp: Übung 1 «Zahlen darstellen», Stufe Leicht.');
+  steps.slice(0,5).forEach(s=>lines.push(s));
+  if(steps.length>5) lines.push(`... und ${steps.length-5} weitere angefangene Übungen`);
+  if(mastered.length) lines.push(`Alle Stufen geschafft: Übung ${mastered.join(', ')}`);
+  if(notStarted.length && (steps.length||mastered.length)) lines.push(`Noch nicht begonnen: Übung ${notStarted.join(', ')}`);
+  let sy=ly+30;
+  text(40,sy,'So geht es weiter',13,true); sy+=18;
+  lines.slice(0,7).forEach(l=>{ dot(46,sy-3,2.5,INK); text(56,sy,l,10); sy+=15; });
+
+  // Hinweis für Erwachsene
+  const hy=Math.max(sy+8,700);
+  const hint='Stufen: Leicht mit vollständigem 20er-Feld und Hilfspunkten, Mittel mit weniger Hilfen und grösserem Zahlenraum, Schwer im Kopf (Bild nur auf Wunsch). Eine Stufe gilt als geschafft, wenn in einer Runde mindestens 8 von 10 Aufgaben beim ersten Versuch und ohne Hilfe richtig gelöst wurden. Falsch gelöste Aufgaben werden in der Runde wiederholt.';
+  const hl=wrap(hint,8.5,W-104);
+  rect(40,hy,W-80,24+hl.length*11,[234,242,255]);
+  text(52,hy+15,'Hinweis für Erwachsene',9.5,true);
+  hl.forEach((l,i)=>text(52,hy+28+i*11,l,8.5,false,[70,80,100]));
+
+  // Fusszeile
+  wrap('Weitermachen: In der App «PDF laden» antippen und diese Datei wählen. Die App speichert keine Daten und überträgt nichts ins Internet.',8,W-80)
+    .forEach((l,i)=>text(40,812+i*10,l,8,false,MUTED));
+
+  // Eingebetteter Lernstand (zum Wiederladen)
+  const data = b64e(JSON.stringify({app:'rechentrainer1', v:1, name:st.name, stars:st.stars, progress:st.progress}));
+  return assemblePDF(ops.join('\n'), data, st.name?`Lernstand ${st.name}`:'Lernstand Rechentrainer');
+}
+
+function assemblePDF(content, data, title){
+  const objs=[];
+  objs[1]='<< /Type /Catalog /Pages 2 0 R >>';
+  objs[2]='<< /Type /Pages /Kids [5 0 R] /Count 1 >>';
+  objs[3]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
+  objs[4]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
+  objs[5]='<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>';
+  objs[6]=`<< /Length ${content.length} >>\nstream\n${content}\nendstream`;
+  objs[7]=`<< /Title (${pdfEsc(title)}) /Producer (Rechentrainer 1) >>`;
+  let out='%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'; const off=[];
+  for(let i=1;i<objs.length;i++){ off[i]=out.length; out+=`${i} 0 obj\n${objs[i]}\nendobj\n`; }
+  out+=`%RT-DATA:${data}\n`;
+  const xref=out.length;
+  out+=`xref\n0 ${objs.length}\n0000000000 65535 f \n`;
+  for(let i=1;i<objs.length;i++) out+=String(off[i]).padStart(10,'0')+' 00000 n \n';
+  out+=`trailer\n<< /Size ${objs.length} /Root 1 0 R /Info 7 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  const bytes=new Uint8Array(out.length);
+  for(let i=0;i<out.length;i++) bytes[i]=out.charCodeAt(i)&255;
+  return bytes;
+}
+
+function downloadPDF(bytes){
+  const d=new Date(), ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const nm=st.name.replace(/[^A-Za-zÀ-ÿ0-9 _-]/g,'').trim().replace(/\s+/g,'_');
+  const blob=new Blob([bytes],{type:'application/pdf'}), url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`Lernstand_Rechentrainer_${nm?nm+'_':''}${ds}.pdf`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 60000);
+}
+
+/* ---------------- PDF: Lernstand wieder laden ---------------- */
+function applyState(obj){
+  if(!obj || obj.app!=='rechentrainer1' || typeof obj.progress!=='object') throw new Error('format');
+  const num=(v,max)=>{ v=Math.floor(Number(v)); return Number.isFinite(v)&&v>=0 ? Math.min(v,max) : 0; };
+  const progress={};
+  for(let m=1;m<=10;m++) for(let L=1;L<=3;L++){
+    const p=obj.progress[m] && obj.progress[m][L]; if(!p) continue;
+    (progress[m] || (progress[m]={}))[L] = {r:num(p.r,1e6), b:num(p.b,10), bb:num(p.bb,10), t:num(p.t,1e7), c:num(p.c,1e7)};
+  }
+  st.progress=progress; st.stars=num(obj.stars,1e7);
+  st.name = typeof obj.name==='string' ? obj.name.slice(0,30) : '';
+  st.dirty=false; st.screen='home'; st.modal=null; render();
+  toast(`👋 Willkommen zurück${st.name?', '+st.name:''}! Dein Lernstand ist geladen.`);
+}
+fileIn.addEventListener('change', () => {
+  const file = fileIn.files && fileIn.files[0]; fileIn.value='';
+  if(!file) return;
+  if(st.dirty && !confirm('Dein aktueller Fortschritt wird durch das PDF ersetzt. Weiter?')) return;
+  const fr=new FileReader();
+  fr.onload = () => {
+    try{
+      const txt=new TextDecoder('latin1').decode(new Uint8Array(fr.result));
+      const mm=txt.match(/%RT-DATA:([A-Za-z0-9+\/=]+)/);
+      if(!mm){ toast('😕 In diesem PDF ist kein Lernstand.'); return; }
+      applyState(JSON.parse(b64d(mm[1])));
+    }catch(e){ toast('😕 Das PDF konnte nicht gelesen werden.'); }
+  };
+  fr.onerror = () => toast('😕 Das PDF konnte nicht gelesen werden.');
+  fr.readAsArrayBuffer(file);
+});
+
+/* ---------------- Bedienung ---------------- */
+const act = {
+  sound(){ st.sound=!st.sound; snd.on=st.sound; if(st.sound) snd.tap(); render(); },
+  home(){ clearTimers(); st.round=null; st.screen='home'; st.modal=null; render(); },
+  openMod(d){ snd.tap(); st.m=+d.m; st.L=recLevel(st.m); st.screen='module'; render(); },
+  level(d){ snd.tap(); st.L=+d.l; render(); },
+  start(d){ snd.tap(); st.mode=d.mode; startRound(); },
+  explore(){ snd.tap(); st.sandbox=cellsBlank(); st.tool='r'; st.screen='explore'; render(); },
+  toModule(){ clearTimers(); st.round=null; st.screen='module'; render(); },
+  d(d){ digit(d.d); }, del(){ delDigit(); }, ok(){ submit(); }, next(){ snd.tap(); nextTask(); },
+  help(){ const r=st.round; if(!r) return; snd.tap(); r.help=true; r.frameHidden=false; render(); },
+  peek(){ const r=st.round; if(!r) return; snd.tap(); r.help=true; startBlitz(); render(); },
+  speak(){ const t=st.round && st.round.cur; if(!t) return; speak(`${t.q} ${t.ref?spoken(t.ref)+'. ':''}${spoken(t.parts)}`); },
+  quit(){ st.modal='quit'; render(); },
+  quitYes(){ clearTimers(); st.modal=null; st.round=null; st.screen='module'; render(); },
+  closeModal(){ st.modal=null; render(); },
+  again(){ startRound(); }, up(){ st.L=Math.min(3,st.L+1); startRound(); }, down(){ st.L=Math.max(1,st.L-1); startRound(); },
+  saveOpen(){ st.modal='save'; render(); },
+  savePdf(){
+    const inp=document.getElementById('nameIn');
+    st.name=(inp?inp.value:'').trim().slice(0,30);
+    try{ downloadPDF(makeReportPDF()); st.dirty=false; st.modal=null; render(); toast('📄 PDF erstellt! Gut aufbewahren.'); }
+    catch(e){ console.error(e); toast('😕 Das PDF konnte nicht erstellt werden.'); }
+  },
+  load(){ fileIn.click(); },
+  info(){ st.modal='info'; render(); },
+  tool(d){ snd.tap(); st.tool=d.t; render(); },
+  cell(d){ snd.tap(); const c=st.sandbox[+d.i]; c.x=false; c.c = st.tool==='e' ? '' : (c.c===st.tool ? '' : st.tool); render(); },
+  clear(){ snd.tap(); st.sandbox=cellsBlank(); render(); },
+  fill5(){ snd.tap(); st.sandbox=fSeq(5); render(); },
+  fill10(){ snd.tap(); st.sandbox=fSeq(10); render(); },
+  rand(){ snd.tap(); const a=R(1,12); st.sandbox=fSeq(a, R(0,Math.min(8,20-a))); render(); }
+};
+$app.addEventListener('click', e => {
+  const b=e.target.closest('[data-a]'); if(!b || b.disabled) return;
+  const fn=act[b.dataset.a]; if(fn) fn(b.dataset);
+});
+document.addEventListener('keydown', e => {
+  if(e.target && e.target.tagName==='INPUT'){ if(e.key==='Enter' && st.modal==='save') act.savePdf(); return; }
+  if(st.modal){ if(e.key==='Escape') act.closeModal(); return; }
+  if(st.screen!=='play') return;
+  if(/^[0-9]$/.test(e.key)) digit(e.key);
+  else if(e.key==='Backspace'){ e.preventDefault(); delDigit(); }
+  else if(e.key==='Enter'){ e.preventDefault(); if(st.round && st.round.phase==='reveal') nextTask(); else submit(); }
+});
+window.addEventListener('beforeunload', e => { if(st.dirty){ e.preventDefault(); e.returnValue=''; } });
+
+render();
+</script>
+</body>
+</html>
