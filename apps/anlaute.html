@@ -598,6 +598,23 @@ textarea{ font: inherit; width:100%; box-sizing:border-box; min-height: 110px; b
 .cell .big{ flex-wrap: wrap; }
 .cell img{ min-width: 0; max-width: 100%; }
 
+/* ---------- Artikel-Häuser: drei Runden ---------- */
+.rounds{ display:flex; align-items:center; gap: 6px; margin-left:auto; font-size: var(--text-sm); color: var(--ink-soft); }
+.rounds i{ font-style: normal; width: 34px; height: 34px; border-radius: 50%; display:grid; place-items:center;
+  border: 2px solid var(--line); font-weight: var(--font-bold); font-variant-numeric: tabular-nums; }
+.rounds i.now{ background: var(--marker); color: var(--marker-ink); border-color: var(--marker); }
+.rounds i.past{ background: var(--main); color: var(--main-ink); border-color: var(--main); }
+.rounds i.skip{ opacity: .35; }
+#sortHelp{ margin-left: 8px !important; }
+.tray-item.gone{ filter: grayscale(1); opacity: .4; border-style: dashed; cursor: default; pointer-events: none; transform: none; }
+.sort-break{ grid-row: 2 / span 2; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 22px; text-align:center; }
+.sort-break h1{ font-size: var(--text-5xl); }
+.sort-break p{ margin:0; font-size: var(--text-lg); color: var(--ink-soft); max-width: 36ch; }
+.sort-break .row{ display:flex; flex-wrap:wrap; justify-content:center; gap: 10px; }
+.sort-break .row span{ width: 92px; height: 92px; border-radius: 18px; background: var(--paper); border: 3px solid var(--marker); padding: 8px; box-sizing: border-box; display:grid; }
+.sort-break .row img{ width:100%; height:100%; min-height:0; object-fit: contain; }
+.rv-item.new{ border-color: var(--main); }
+
 @media (prefers-reduced-motion: reduce){
   *, *::before, *::after{ animation: none !important; transition: none !important; }
 }
@@ -696,7 +713,14 @@ textarea{ font: inherit; width:100%; box-sizing:border-box; min-height: 110px; b
     <div class="bar">
       <button class="icon-btn" data-home aria-label="Zurück zur Übersicht"><svg><use href="#i-back"/></svg></button>
       <h2>Artikel-Häuser</h2>
-      <button class="icon-btn" id="sortHelp" aria-label="Aufgabe vorlesen" style="margin-left:auto"><svg><use href="#i-speak"/></svg></button>
+      <div class="rounds" id="sortRounds" aria-live="polite"></div>
+      <button class="icon-btn" id="sortHelp" aria-label="Aufgabe vorlesen"><svg><use href="#i-speak"/></svg></button>
+    </div>
+    <div class="sort-break" id="sortBreak" hidden>
+      <h1 id="breakTitle">Runde 2</h1>
+      <p id="breakText">Diese Bilder üben wir nochmals.</p>
+      <div class="row" id="breakPics"></div>
+      <button class="btn primary" id="breakGo" style="min-height:72px; padding-inline:40px">Weiter</button>
     </div>
     <div class="tray" id="tray"></div>
     <div class="houses">
@@ -1369,13 +1393,28 @@ addEventListener('resize', () => requestAnimationFrame(layoutBoard));
 /* ---------- Artikel-Häuser ---------- */
 let T = null;
 const SORT_TEXT = 'Zieh jedes Bild in das richtige Haus. Der, die oder das?';
+/* Runde 1: neun Bilder. Falsch eingeordnete Bilder werden grau.
+   Runde 2: nur die falschen Bilder aus Runde 1.
+   Runde 3: Festigen: alle Bilder, die in Runde 1 falsch waren, gemischt mit bis zu drei sicheren. */
 function startSort(){
   const per = art => shuffle(ITEMS.filter(i => i.art === art)).slice(0,3);
   const items = shuffle([...per('der'), ...per('die'), ...per('das')]);
-  T = { items, done: [], first: 0, miss: new Set(), sel: null, pick: {} };
+  T = { items, round: 1, list: [], res: {}, pick: {}, sel: null, left: 0, skipped: [] };
+  items.forEach(it => { T.res[it.id] = []; });
   beginSess('sort');
+  show('sort');
+  sortRound(1, items);
+  say({text: SORT_TEXT, rate:.9});
+}
+function drawRounds(){
+  $('sortRounds').innerHTML = '<span>Runde</span>' + [1,2,3].map(n => `<i class="${n === T.round ? 'now' : n < T.round ? (T.skipped.includes(n) ? 'skip' : 'past') : ''}">${n}</i>`).join('');
+  $('sortRounds').setAttribute('aria-label', `Runde ${T.round} von 3`);
+}
+function sortRound(n, list){
+  T.round = n; T.list = list; T.left = list.length; T.sel = null;
+  $('sortBreak').hidden = true; $('tray').hidden = false; document.querySelector('#sort .houses').hidden = false;
   const tray = $('tray'); tray.innerHTML = '';
-  items.forEach(it => {
+  list.forEach(it => {
     const b = document.createElement('button');
     b.className = 'tray-item'; b.dataset.id = it.id;
     b.setAttribute('aria-label', it.w);
@@ -1383,11 +1422,43 @@ function startSort(){
     tray.append(b);
   });
   document.querySelectorAll('.house .bin').forEach(x => x.innerHTML = '');
-  show('sort');
-  say({text: SORT_TEXT, rate:.9});
+  drawRounds();
+}
+function sortBreak(n, list, title, text){
+  T.round = n; drawRounds();
+  $('tray').hidden = true; document.querySelector('#sort .houses').hidden = true; $('sortBreak').hidden = false;
+  $('breakTitle').textContent = title; $('breakText').textContent = text;
+  $('breakPics').innerHTML = list.map(it => `<span><img src="${IMG[it.id]}" alt="${it.w}"></span>`).join('');
+  $('breakGo').onclick = () => { sortRound(n, list); say({text: SORT_TEXT, rate:.9}); };
+  say({text: `${title}. ${text}`, rate:.9});
+}
+function endRound(){
+  const wrong1 = T.items.filter(it => T.res[it.id][0] === false);
+  if(T.round === 1){
+    if(!wrong1.length) return finishSort();
+    return sortBreak(2, shuffle(wrong1), 'Runde 2', 'Diese Bilder üben wir nochmals.');
+  }
+  if(T.round === 2){
+    const sure = shuffle(T.items.filter(it => T.res[it.id][0] === true)).slice(0, 3);
+    return sortBreak(3, shuffle([...wrong1, ...sure]), 'Runde 3', 'Jetzt zeigst du, was du gelernt hast.');
+  }
+  finishSort();
+}
+function finishSort(){
+  const last = it => { const r = T.res[it.id]; return r[r.length - 1]; };
+  const sure = T.items.filter(it => T.res[it.id][0] === true && last(it) === true);
+  const learned = T.items.filter(it => T.res[it.id][0] === false && last(it) === true);
+  const todo = T.items.filter(it => last(it) === false);
+  const card = (it, cls) => `<button class="rv-item ${cls}" data-say="${it.id}" aria-label="${it.art} ${it.w} anhören"><img src="${IMG[it.id]}" alt=""><span><b>${artHTML(it.art)} ${it.w}</b>${cls === 'todo' && T.pick[it.id] ? `<small>gewählt: <s>${T.pick[it.id]}</s></small>` : ''}</span></button>`;
+  let h = '';
+  if(todo.length) h += `<h2>Noch üben</h2><p class="hint">Auch in der letzten Runde noch im falschen Haus. Tippe auf ein Bild, um es anzuhören.</p><div class="rv-list">${todo.map(it => card(it, 'todo')).join('')}</div>`;
+  if(learned.length) h += `<h2>Neu gelernt</h2><p class="hint">In Runde 1 falsch, danach richtig.</p><div class="rv-list">${learned.map(it => card(it, 'ok new')).join('')}</div>`;
+  if(sure.length) h += `<h2>Sicher</h2><div class="rv-list">${sure.map(it => card(it, 'ok')).join('')}</div>`;
+  finish(T.items, `${sure.length} von ${T.items.length} Bildern in Runde 1 im richtigen Haus`, startSort, h);
 }
 $('sortHelp').onclick = () => say({text: SORT_TEXT, rate:.9}, $('sortHelp'));
 function selectItem(b){
+  if(b.classList.contains('gone')) return;
   document.querySelectorAll('.tray-item.selected').forEach(x => x.classList.remove('selected'));
   T.sel = b; b.classList.add('selected');
   document.querySelectorAll('.house').forEach(h => h.classList.add('ready'));
@@ -1399,27 +1470,28 @@ function clearSel(){
   document.querySelectorAll('.house').forEach(h => h.classList.remove('ready','hover'));
 }
 function place(b, house){
+  if(b.classList.contains('gone')) return;
   const it = BY_ID[b.dataset.id], art = house.dataset.art;
+  const ok = it.art === art;
   clearSel();
   b.classList.remove('lifted');
   house.classList.remove('yes','nope'); void house.offsetWidth;
-  if(it.art === art){
+  T.res[it.id].push(ok);
+  recItem(ok ? {k: it.id, ok: true, r: T.round} : {k: it.id, ok: false, pick: art, r: T.round});
+  if(ok){
     house.classList.add('yes');
     b.remove();
     const im = new Image(); im.src = IMG[it.id]; im.alt = `${art} ${it.w}`;
     house.querySelector('.bin').append(im);
-    if(!T.miss.has(it.id)) T.first++;
-    recItem(T.pick[it.id] ? {k: it.id, ok: false, pick: T.pick[it.id]} : {k: it.id, ok: true});
-    T.done.push(it);
     say(`${art} ${it.w}`, house);
-    if(!$('tray').querySelector('.tray-item')) setTimeout(() => { if(current === 'sort') finish(T.done, `${T.first} von ${T.items.length} Bildern beim ersten Mal im richtigen Haus`, startSort); }, 1800);
   } else {
-    if(!T.miss.has(it.id)) T.pick[it.id] = art;
-    T.miss.add(it.id);
+    T.pick[it.id] = art;
     house.classList.add('nope');
-    b.classList.add('back'); setTimeout(() => b.classList.remove('back'), 400);
-    say([{text:'Hör nochmals gut hin.', rate:.9}, {text: it.w, rate:.7}]);
+    b.classList.add('gone'); b.disabled = true; b.setAttribute('aria-label', `${it.w}, kommt nochmals`);
+    say({text: 'Das üben wir nochmals.', rate:.9});
   }
+  T.left--;
+  if(T.left <= 0) setTimeout(() => { if(current === 'sort') endRound(); }, 1800);
 }
 document.querySelectorAll('.house').forEach(h => h.onclick = () => { if(T && T.sel) place(T.sel, h); else say(h.dataset.art, h); });
 
@@ -1427,7 +1499,7 @@ document.querySelectorAll('.house').forEach(h => h.onclick = () => { if(T && T.s
 let drag = null;
 const houseAt = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest('.house'); };
 $('tray').addEventListener('pointerdown', e => {
-  const b = e.target.closest('.tray-item'); if(!b) return;
+  const b = e.target.closest('.tray-item:not(.gone)'); if(!b) return;
   drag = { b, x0: e.clientX, y0: e.clientY, moved: false, ghost: null, over: null };
   try{ b.setPointerCapture(e.pointerId); }catch(_){}
 });
@@ -1690,7 +1762,8 @@ function statsOf(k){
   L.forEach(s => {
     last = Math.max(last, s.ts);
     const e = ex[s.ex] = ex[s.ex] || { rounds: 0, items: 0, ok: 0, moves: 0 };
-    e.rounds++; e.items += s.items.length; e.ok += s.items.filter(i => i.ok).length; e.moves += s.moves || 0;
+    const first = s.items.filter(i => !i.r || i.r === 1);
+    e.rounds++; e.items += first.length; e.ok += first.filter(i => i.ok).length; e.moves += s.moves || 0;
     if(s.ex === 'laut' || s.ex === 'bild'){
       s.items.forEach(i => {
         const l = letters[i.k] = letters[i.k] || { n: 0, wrong: 0, picks: {} };
@@ -1699,7 +1772,7 @@ function statsOf(k){
       });
     }
     if(s.ex === 'artikel' || s.ex === 'sort'){
-      s.items.forEach(i => { const it = BY_ID[i.k]; if(!it || !arts[it.art]) return; arts[it.art].n++; artN++; artLast[it.id] = { ok: !!i.ok, pick: i.pick }; if(i.ok){ arts[it.art].ok++; artOk++; } });
+      s.items.forEach(i => { const it = BY_ID[i.k]; if(!it || !arts[it.art]) return; artLast[it.id] = { ok: !!i.ok, pick: i.pick }; if(i.r && i.r > 1) return; arts[it.art].n++; artN++; if(i.ok){ arts[it.art].ok++; artOk++; } });
     }
   });
   const tests = testsOf(k);
