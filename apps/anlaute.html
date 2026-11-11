@@ -616,7 +616,7 @@ textarea{ font: inherit; width:100%; box-sizing:border-box; min-height: 110px; b
     </div>
     <button class="check-tile" id="goCheck">
       <span class="ear-big" aria-hidden="true"><svg><use href="#i-speak"/></svg></span>
-      <span><b>Laute-Check</b><span class="s">Welche Laute kennst du schon?</span></span>
+      <span><b>Buchstaben-Check</b><span class="s">Welche Laute kennst du schon?</span></span>
       <span class="deco" aria-hidden="true"><span>Aa</span><span>Mm</span><span>Sch</span><span>Ei</span></span>
     </button>
     <div class="tiles">
@@ -731,11 +731,11 @@ textarea{ font: inherit; width:100%; box-sizing:border-box; min-height: 110px; b
 <section id="check" class="view" hidden>
   <div class="wrap">
     <div class="bar">
-      <button class="icon-btn" data-home aria-label="Laute-Check beenden"><svg><use href="#i-back"/></svg></button>
+      <button class="icon-btn" data-home aria-label="Buchstaben-Check beenden"><svg><use href="#i-back"/></svg></button>
       <div class="dots" id="dots"></div>
     </div>
     <div class="check-pane" id="checkIntro">
-      <h1 id="checkHello">Laute-Check</h1>
+      <h1 id="checkHello">Buchstaben-Check</h1>
       <p>Hör gut zu. Tippe auf den Buchstaben, den du hörst. Weisst du es nicht? Dann tippe auf das Fragezeichen.</p>
       <button class="btn primary" id="checkGo" style="min-height:72px; padding-inline:40px">Anfangen</button>
     </div>
@@ -1560,7 +1560,7 @@ function startCheck(){
   const set = S.checkSet === 'az' ? AZ.slice() : ITEMS.map(i => i.a);
   C = { id: uid(), kid: recKid(), ts: Date.now(), order: shuffle(set), i: 0, res: {}, lock: false, finished: false };
   const k = activeKid();
-  $('checkHello').textContent = 'Laute-Check';
+  $('checkHello').textContent = 'Buchstaben-Check';
   ['checkIntro','checkRun','checkEnd'].forEach(id => $(id).hidden = id !== 'checkIntro');
   drawDots();
   show('check');
@@ -1730,7 +1730,7 @@ function renderDash(){
         <div class="sum"><b>${D.log.length}</b><span>Übungsrunden</span></div>
         <div class="sum"><b>${tested.length ? Math.round(tested.reduce((s,k) => s + knownCount(S2[k].test), 0) / tested.length) : '–'}</b><span>Laute im Schnitt erkannt</span></div>
       </div></div>
-      <div class="btnrow"><button class="btn small primary" id="pdfClass">Klassenbericht als PDF</button><p class="msg" id="pdfMsg" aria-live="polite"></p></div>`;
+`;
 
     h += `<section><h3>Lernstand der Klasse</h3>
       <p class="hint">Grundlage ist jeweils der letzte Buchstaben-Check eines Kindes. Die Zahl unten zeigt, wie viele Kinder den Laut erkannt haben.</p>
@@ -1753,7 +1753,7 @@ function renderDash(){
         <td>${s.L.length || '–'}</td><td>${meter(pct(s.lautOk, s.lautN))}</td><td>${meter(pct(s.artOk, s.artN))}</td>
         <td>${s.last ? fmtDate(s.last) : '–'}</td></tr>`;
     });
-    h += `</tbody></table></div><p class="hint">Tippe auf einen Namen für die Einzelauswertung.</p></section>`;
+    h += `</tbody></table></div><p class="hint">Tippe auf ein Kind für die Einzelauswertung. Dort druckst du den Bericht als PDF aus, eine Seite pro Kind.</p></section>`;
 
     if(selKid && kids.includes(selKid)) h += childHTML(selKid, S2[selKid]);
   }
@@ -1801,7 +1801,6 @@ function bindDash(kids){
     selKid = kids[+b.dataset.kid]; renderDash();
     const p = $('childPanel'); if(p) p.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
   });
-  if($('pdfClass')) $('pdfClass').onclick = () => savePdf(kids, true, `Lernstand Anlaute Klasse ${fileDate()}.pdf`, $('pdfClass'), $('pdfMsg'));
   if($('pdfKid')) $('pdfKid').onclick = () => savePdf([selKid], false, `Lernstand Anlaute Nr ${kidItem(selKid) ? kidItem(selKid).id : 'ohne'} ${fileDate()}.pdf`, $('pdfKid'), $('pdfKidMsg'));
   $('expBtn').onclick = () => {
     const txt = exportText(), out = $('expOut');
@@ -1956,14 +1955,19 @@ async function buildPdf(kids, withClass){
   kids.filter(k => !withClass || ST[k].L.length || ST[k].tests.length).forEach(k => {
     const W = 595, H = 842, s = ST[k], t = s.test;
     const pg = doc.addPage([W, H]);
-    let y = H - 56;
-    txt(pg, 'Lernstand Anlaute', 40, y + 14, 10, F, P.grey);
+    let y = H - 46;
     const kit = kidItem(k);
-    if(PIC[k]) pg.drawImage(PIC[k], { x: W - 40 - 64, y: y - 30, width: 64, height: 64 });
-    txt(pg, kit ? `Nr. ${kit.id} · ${kit.w}` : k, 40, y - 10, 22, B);
-    txt(pg, 'Name:', 40, y - 34, 11, F, P.grey);
-    pg.drawLine({ start: {x: 78, y: y - 36}, end: {x: W - 120, y: y - 36}, thickness: .6, color: P.grey });
-    y -= 62;
+    /* Kopf: Titel, Namensfeld zum Ausfüllen von Hand, Erkennungsbild */
+    txt(pg, 'Lernstand Anlaute · Buchstaben-Check', 40, y, 10, B, P.grey);
+    const dt = `Stand: ${today}`; txt(pg, dt, W - 40 - width(dt, 9), y, 9, F, P.grey);
+    pg.drawLine({ start: {x: 40, y: y - 8}, end: {x: W - 40, y: y - 8}, thickness: .6, color: P.line });
+    const boxR = W - 40 - 92;
+    txt(pg, 'Name des Kindes', 40, y - 28, 9, F, P.grey);
+    pg.drawRectangle({ x: 40, y: y - 82, width: boxR - 40, height: 46, borderColor: P.grey, borderWidth: .8, color: P.white });
+    if(PIC[k]) pg.drawImage(PIC[k], { x: W - 40 - 74, y: y - 84, width: 64, height: 64 });
+    const cap = kit ? `Bild Nr. ${kit.id} · ${kit.w}` : k;
+    txt(pg, cap, W - 40 - 42 - width(cap, 8) / 2, y - 96, 8, F, P.grey);
+    y -= 122;
     txt(pg, t ? `Buchstaben-Check vom ${fmtDate(t.ts)}: ${knownCount(t)} von ${t.n} Lauten erkannt${t.done ? '' : ' (nicht fertig gemacht)'}` : 'Noch kein Buchstaben-Check gemacht.', 40, y, 11, B, P.main); y -= 22;
     const cw = 62, ch = 44, perRow = 8;
     ITEMS.forEach((it, j) => {
