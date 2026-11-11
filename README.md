@@ -38,5 +38,9 @@ Sicherheitsregel (`Content-Security-Policy`), die Anfragen nach aussen sperrt.
 Ausnahme: In der Tierbibliothek öffnet der Knopf «Folge anschauen» die ARD Mediathek in einem neuen Tab,
 aber erst, wenn ein Kind darauf tippt. Die Vorlesefunktion nutzt die Stimmen des Geräts.
 
+Anlaute: Die App speichert keine Namen. Die Kinder wählen ein Bild als Erkennungszeichen, die
+Zuordnung zu den Namen macht die Lehrperson auf Papier. Laute-Check und Übungsergebnisse bleiben
+im Browser des jeweiligen iPads. Der PDF-Bericht wird auf dem Gerät erzeugt und heruntergeladen.
+
 Beim Einbauen einer neuen App darauf achten, dass sie keine Schriften oder Skripte von fremden
 Adressen lädt (z.B. `fonts.googleapis.com`).

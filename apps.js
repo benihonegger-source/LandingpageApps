@@ -19,6 +19,12 @@ window.APPS = [
     klasse: "1. Klasse"
   },
   {
+    datei:  "apps/anlaute.html",
+    titel:  "Anlaute",
+    uebt:   "Anlaute hören, Buchstaben finden, der, die, das",
+    klasse: "1. Klasse"
+  },
+  {
     datei:  "apps/einmaleins-heft.html",
     titel:  "Einmaleins-Heft",
     uebt:   "Kleines und grosses 1×1, Rechnen bis 10 000",
