@@ -982,14 +982,17 @@ const hasRec = a => !!AUDIO[a];
 let voice = null, speakingEl = null, sayTimer = null, seq = 0, curSrc = null;
 function pickVoice(){
   if(!TTS) return;
-  const de = speechSynthesis.getVoices().filter(v => /^de/i.test(v.lang));
-  voice = de.find(v => /de-CH/i.test(v.lang)) || de.find(v => /anna|helena|petra|marlene|vicki|google/i.test(v.name)) || de[0] || null;
+  const prem = speechSynthesis.getVoices().filter(v => /^de/i.test(v.lang) && /premium/i.test(v.voiceURI + ' ' + v.name) && v.localService !== false);
+  voice = prem.find(v => /de-CH/i.test(v.lang)) || prem.find(v => /anna|petra|helena/i.test(v.name)) || prem[0] || null;
   updateVoiceNote();
+  if(typeof updateStart === 'function' && $('startNote')) updateStart();
 }
 const wait = ms => new Promise(r => setTimeout(r, ms));
 function speakOne(t){
   return new Promise(res => {
     if(!TTS) return res();
+    if(!voice) pickVoice();
+    if(!voice) return res();   /* ohne Premium-Stimme wird nichts vorgelesen */
     const u = new SpeechSynthesisUtterance(t.text);
     u.lang = voice ? voice.lang : 'de-DE';
     if(voice) u.voice = voice;
@@ -1060,8 +1063,12 @@ document.querySelectorAll('img[data-img]').forEach(im => im.src = IMG[im.dataset
 
 function updateStart(){
   const n = $('startNote');
-  n.hidden = S.sel.length > 0;
-  n.textContent = 'Für «Laut finden», «Bild finden» und Memory sind noch keine Anlaute ausgewählt. Tippe auf «Für Lehrpersonen».';
+  const noVoice = TTS && !voice && speechSynthesis.getVoices().length > 0;
+  const msgs = [];
+  if(!S.sel.length) msgs.push('Für «Laut finden», «Bild finden» und Memory sind noch keine Anlaute ausgewählt. Tippe auf «Für Lehrpersonen».');
+  if(noVoice) msgs.push('Hinweis für Lehrpersonen: Auf diesem iPad ist keine deutsche Premium-Stimme installiert, darum werden die Wörter nicht vorgelesen. Auf dem iPad: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Deutsch. Dort eine Stimme wählen (z.B. Anna) und die Variante «Premium» laden. Danach die App neu laden.');
+  n.hidden = !msgs.length;
+  n.textContent = msgs.join(' ');
   applyColor();
   const chip = $('kidChip');
   chip.hidden = !kidList().length;
@@ -1512,8 +1519,8 @@ function updateVoiceNote(){
 }
 function updateVoiceNote2(n, recNote){
   if(!TTS) n.textContent = 'Dieses Gerät kann keine Wörter vorlesen. Die Kinder benennen die Bilder dann selbst.' + recNote;
-  else if(voice) n.textContent = `Vorlesestimme: ${voice.name} (${voice.lang}). In den Anlaut-Übungen werden die Wörter ohne Artikel vorgelesen, damit der Anlaut klar hörbar ist. Auf dem iPad klingt es natürlicher mit einer «verbesserten» deutschen Stimme: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Deutsch.` + recNote;
-  else n.textContent = 'Keine deutsche Vorlesestimme gefunden. Auf dem iPad: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Deutsch.' + recNote;
+  else if(voice) n.textContent = `Vorlesestimme: ${voice.name} (Premium, ${voice.lang}). Die App nutzt nur Premium-Stimmen, die auf dem Gerät installiert sind. In den Anlaut-Übungen werden die Wörter ohne Artikel vorgelesen, damit der Anlaut klar hörbar ist.` + recNote;
+  else n.textContent = 'Auf diesem Gerät ist keine deutsche Premium-Stimme installiert. Darum werden die Wörter nicht vorgelesen, die Laute (deine Aufnahmen) schon. Auf dem iPad: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Deutsch. Dort eine Stimme wählen (z.B. Anna) und die Variante «Premium» laden. Danach die App neu laden.' + recNote;
 }
 if(TTS){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 
