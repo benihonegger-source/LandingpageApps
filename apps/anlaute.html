@@ -835,6 +835,10 @@ textarea{ font: inherit; width:100%; box-sizing:border-box; min-height: 110px; b
         <div><h3>Artikel in Farbe</h3>
           <p class="hint">der blau, die rot, das grün</p>
           <div class="seg" data-key="color" role="group" aria-label="Artikel in Farbe"><button data-v="on">Ja</button><button data-v="off">Nein</button></div></div>
+        <div><h3>Vorlesetempo</h3>
+          <p class="hint">Wie schnell die Wörter vorgelesen werden. Deine Laut-Aufnahmen bleiben gleich.</p>
+          <div class="seg" data-key="tempo" role="group" aria-label="Vorlesetempo"><button data-v="normal">Normal</button><button data-v="langsam">Langsam</button><button data-v="sehrlangsam">Sehr langsam</button></div>
+          <div class="btnrow" style="margin-top:10px"><button class="btn small" id="tempoTest">Probe anhören: «Elefant»</button></div></div>
       </div>
       <details class="lautlist">
         <summary>So klingen die Laute</summary>
@@ -907,7 +911,7 @@ const clash = (x,y) => CLASH.some(g => g.includes(x) && g.includes(y));
 const ARTS = ['der','die','das'];
 
 /* ---------- Einstellungen ---------- */
-const DEFAULTS = { sel: ITEMS.map(i=>i.a), n: 3, cs: 'both', len: 10, pairs: 6, color: 'on', laut: {}, checkSet: 'all' };
+const DEFAULTS = { sel: ITEMS.map(i=>i.a), n: 3, cs: 'both', len: 10, pairs: 6, color: 'on', laut: {}, checkSet: 'all', tempo: 'langsam' };
 let S = {...DEFAULTS};
 try{ const s = JSON.parse(localStorage.getItem('anlaute-v1')||'null'); if(s) S = {...DEFAULTS, ...s}; }catch(e){}
 function save(){ try{ localStorage.setItem('anlaute-v1', JSON.stringify(S)); }catch(e){} }
@@ -996,7 +1000,8 @@ function speakOne(t){
     const u = new SpeechSynthesisUtterance(t.text);
     u.lang = voice ? voice.lang : 'de-DE';
     if(voice) u.voice = voice;
-    u.rate = t.rate || .8;
+    const TEMPO = { normal: 1, langsam: .78, sehrlangsam: .62 };
+    u.rate = Math.max(.3, (t.rate || .8) * (TEMPO[S.tempo] || .78));
     let done = false;
     const fin = () => { if(!done){ done = true; clearTimeout(to); res(); } };
     const to = setTimeout(fin, 1500 + t.text.length * 180 / u.rate);
@@ -1656,6 +1661,7 @@ function setCount(n){
   if(D.cur && !kidList().includes(D.cur)) D.cur = null;
   saveD(); updateStart(); drawKidSetting();
 }
+$('tempoTest').onclick = () => say({text: 'Elefant', rate: .8}, $('tempoTest'));
 $('kidMinus').onclick = () => setCount(kidList().length - 1);
 $('kidPlus').onclick = () => setCount(kidList().length + 1);
 $('pdfList').onclick = () => savePdfWith(buildListPdf, `Zuordnungsliste Anlaute ${fileDate()}.pdf`, $('pdfList'), $('pdfListMsg'));
