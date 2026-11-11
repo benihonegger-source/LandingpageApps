@@ -463,7 +463,7 @@ details.lautlist summary{ cursor:pointer; font-size: var(--text-lg); font-weight
 .kid-btn.guest .ini{ background: var(--main-soft); color: var(--main); }
 @media (hover:hover){ .kid-btn:hover{ border-color: var(--main); } }
 
-/* ---------- Laute-Check ---------- */
+/* ---------- Buchstaben-Check ---------- */
 .check-tile{ display:flex; align-items:center; gap: 18px; text-align:left; background: var(--marker); color: var(--marker-ink);
   border:0; border-radius: var(--radius-card); padding: 14px 22px; min-height: 96px; transition: transform .18s var(--ease); }
 .check-tile:active{ transform: scale(.98); }
@@ -808,8 +808,8 @@ textarea{ font: inherit; width:100%; box-sizing:border-box; min-height: 110px; b
         <div class="btnrow" style="margin-top:14px"><button class="btn small" id="pdfList">Zuordnungsliste als PDF</button><p class="msg" id="pdfListMsg" aria-live="polite"></p></div>
       </div>
       <div>
-        <h3>Laute-Check prüft</h3>
-        <div class="seg" data-key="checkSet" role="group" aria-label="Umfang Laute-Check"><button data-v="all">Alle 37 Laute</button><button data-v="az">Nur A bis Z</button></div>
+        <h3>Buchstaben-Check prüft</h3>
+        <div class="seg" data-key="checkSet" role="group" aria-label="Umfang Buchstaben-Check"><button data-v="all">Alle 37 Laute</button><button data-v="az">Nur A bis Z</button></div>
       </div>
       <div>
         <h3>Welche Anlaute kennt die Klasse schon?</h3>
@@ -1554,7 +1554,7 @@ function openPicker(){
   say({text: 'Welches Bild gehört dir? Tippe darauf.', rate: .9});
 }
 
-/* ---------- Laute-Check ---------- */
+/* ---------- Buchstaben-Check ---------- */
 let C = null;
 function startCheck(){
   const set = S.checkSet === 'az' ? AZ.slice() : ITEMS.map(i => i.a);
@@ -1719,21 +1719,21 @@ function renderDash(){
   let h = '';
   if(!hasData){
     h += `<div class="empty-state"><b>Noch keine Ergebnisse auf diesem iPad</b>
-      <p>Sobald ein Kind den Laute-Check macht oder übt, erscheint hier seine Auswertung. Lege zuerst unter «Einstellungen» die Anzahl Kinder fest. Jedes Kind bekommt dann ein Bild, das es vor dem Üben antippt.</p>
+      <p>Sobald ein Kind den Buchstaben-Check macht oder übt, erscheint hier seine Auswertung. Lege zuerst unter «Einstellungen» die Anzahl Kinder fest. Jedes Kind bekommt dann ein Bild, das es vor dem Üben antippt.</p>
       <button class="btn small primary" data-tab2="settings">Anzahl Kinder festlegen</button></div>`;
   } else {
     const tested = kids.filter(k => S2[k].test);
     const weak = ITEMS.map(i => i.a).filter(a => { const t = tested.filter(k => testStatus(S2[k].test, a) !== 'u'); return t.length && t.filter(k => testStatus(S2[k].test, a) === 'k').length / t.length < .5; });
     h += `<div class="row-between"><div class="summary" style="flex:1">
         <div class="sum"><b>${kids.length}</b><span>Kinder</span></div>
-        <div class="sum"><b>${D.tests.length}</b><span>Laute-Checks</span></div>
+        <div class="sum"><b>${D.tests.length}</b><span>Buchstaben-Checks</span></div>
         <div class="sum"><b>${D.log.length}</b><span>Übungsrunden</span></div>
         <div class="sum"><b>${tested.length ? Math.round(tested.reduce((s,k) => s + knownCount(S2[k].test), 0) / tested.length) : '–'}</b><span>Laute im Schnitt erkannt</span></div>
       </div></div>
       <div class="btnrow"><button class="btn small primary" id="pdfClass">Klassenbericht als PDF</button><p class="msg" id="pdfMsg" aria-live="polite"></p></div>`;
 
     h += `<section><h3>Lernstand der Klasse</h3>
-      <p class="hint">Grundlage ist jeweils der letzte Laute-Check eines Kindes. Die Zahl unten zeigt, wie viele Kinder den Laut erkannt haben.</p>
+      <p class="hint">Grundlage ist jeweils der letzte Buchstaben-Check eines Kindes. Die Zahl unten zeigt, wie viele Kinder den Laut erkannt haben.</p>
       <div class="legend"><span><i style="background:var(--main)"></i>erkannt</span><span><i style="background:var(--wrong-soft); box-shadow: inset 0 0 0 2px var(--wrong)"></i>nicht erkannt</span><span><i style="background:var(--bg); box-shadow: inset 0 0 0 1px var(--line)"></i>nicht geprüft</span></div>
       <div class="box scroll-x"><table class="matrix"><thead><tr><th class="name">Kind</th>${ITEMS.map(i => `<th>${esc(i.a)}</th>`).join('')}</tr></thead><tbody>`;
     kids.forEach(k => {
@@ -1745,7 +1745,7 @@ function renderDash(){
     if(weak.length) h += `<p class="hint">Weniger als die Hälfte der geprüften Kinder kennt diese Laute:</p><div class="chips">${weak.map(a => `<span>${esc(a)}</span>`).join('')}</div>`;
     h += `</section>`;
 
-    h += `<section><h3>Kinder</h3><div class="box scroll-x"><table class="kt"><thead><tr><th>Kind</th><th>Laute-Check</th><th>Übungsrunden</th><th>Anlaute beim 1. Versuch</th><th>Artikel beim 1. Versuch</th><th>Zuletzt aktiv</th></tr></thead><tbody>`;
+    h += `<section><h3>Kinder</h3><div class="box scroll-x"><table class="kt"><thead><tr><th>Kind</th><th>Buchstaben-Check</th><th>Übungsrunden</th><th>Anlaute beim 1. Versuch</th><th>Artikel beim 1. Versuch</th><th>Zuletzt aktiv</th></tr></thead><tbody>`;
     kids.forEach((k, idx) => {
       const s = S2[k];
       h += `<tr class="${k === selKid ? 'sel' : ''}"><td>${kidThumb(k)}<button class="linkbtn" data-kid="${idx}">${esc(kidLabel(k))}</button></td>
@@ -1767,7 +1767,7 @@ function renderDash(){
     <p class="msg" id="xMsg" aria-live="polite"></p></section>`;
 
   h += `<section><h3>Ergebnisse löschen</h3>
-    <p class="hint">Löscht alle Laute-Checks und Übungsrunden auf diesem iPad. Die Anzahl Kinder bleibt.</p>
+    <p class="hint">Löscht alle Buchstaben-Checks und Übungsrunden auf diesem iPad. Die Anzahl Kinder bleibt.</p>
     <div class="btnrow" id="delRow"><button class="btn small danger" id="delAll">Alle Ergebnisse löschen</button></div></section>`;
 
   body.innerHTML = h;
@@ -1778,15 +1778,15 @@ function childHTML(k, s){
   let h = `<div class="child" id="childPanel"><div class="row-between"><h3>${kidThumb(k)}${esc(kidLabel(k))}</h3>
     <div class="btnrow"><button class="btn small primary" id="pdfKid">Bericht als PDF</button></div></div>
     <p class="msg" id="pdfKidMsg" aria-live="polite"></p>`;
-  h += `<div><h4>${t ? `Laute-Check vom ${fmtDate(t.ts)}: ${knownCount(t)} von ${t.n} Lauten erkannt${t.done ? '' : ' (nicht fertig gemacht)'}` : 'Noch kein Laute-Check'}</h4>
+  h += `<div><h4>${t ? `Buchstaben-Check vom ${fmtDate(t.ts)}: ${knownCount(t)} von ${t.n} Lauten erkannt${t.done ? '' : ' (nicht fertig gemacht)'}` : 'Noch kein Buchstaben-Check'}</h4>
     <div class="lgrid">${ITEMS.map(i => { const st = testStatus(t, i.a); const r = t && t.res[i.a];
       const note = st === 'n' ? (r.pick ? 'wählte ' + esc(r.pick) : 'weiss nicht') : st === 'u' ? '–' : '';
       return `<div class="lcell ${st}"><b>${esc(i.a)}</b><small>${note}</small></div>`; }).join('')}</div></div>`;
   const unknown = t ? ITEMS.map(i => i.a).filter(a => testStatus(t, a) === 'n') : [];
   const probs = problemLetters(s);
   h += `<div class="cols2">`;
-  h += `<div><h4>Noch üben</h4>${unknown.length ? `<div class="chips">${unknown.map(a => `<span>${esc(a)}</span>`).join('')}</div>` : '<p class="hint">Keine offenen Laute aus dem letzten Laute-Check.</p>'}</div>`;
-  h += `<div><h4>Verlauf Laute-Check</h4>${s.tests.length ? `<ul class="plain">${s.tests.map(x => `<li>${fmtDate(x.ts)}: ${knownCount(x)} von ${x.n}${x.done ? '' : ' (abgebrochen)'}</li>`).join('')}</ul>` : '<p class="hint">Noch keiner gemacht.</p>'}</div>`;
+  h += `<div><h4>Noch üben</h4>${unknown.length ? `<div class="chips">${unknown.map(a => `<span>${esc(a)}</span>`).join('')}</div>` : '<p class="hint">Keine offenen Laute aus dem letzten Buchstaben-Check.</p>'}</div>`;
+  h += `<div><h4>Verlauf Buchstaben-Check</h4>${s.tests.length ? `<ul class="plain">${s.tests.map(x => `<li>${fmtDate(x.ts)}: ${knownCount(x)} von ${x.n}${x.done ? '' : ' (abgebrochen)'}</li>`).join('')}</ul>` : '<p class="hint">Noch keiner gemacht.</p>'}</div>`;
   h += `</div><div class="cols2">`;
   h += `<div><h4>Übungen</h4>${Object.keys(s.ex).length ? `<table class="kt"><thead><tr><th>Übung</th><th>Runden</th><th>beim 1. Versuch</th></tr></thead><tbody>${Object.entries(s.ex).map(([e, v]) => `<tr><td>${EX_NAME[e] || e}</td><td>${v.rounds}</td><td>${e === 'memory' ? `${v.items} Paare, ${v.moves} Züge` : meter(pct(v.ok, v.items))}</td></tr>`).join('')}</tbody></table>` : '<p class="hint">Noch keine Übungen gespielt.</p>'}</div>`;
   h += `<div><h4>Häufige Fehler in den Übungen</h4>${probs.length ? `<ul class="plain">${probs.map(p => `<li><b>${esc(p.a)}</b>: ${p.wrong} von ${p.n} falsch${p.conf ? ', oft verwechselt mit ' + esc(p.conf) : ''}</li>`).join('')}</ul>` : '<p class="hint">Keine auffälligen Fehler.</p>'}
@@ -1806,12 +1806,12 @@ function bindDash(kids){
   $('expBtn').onclick = () => {
     const txt = exportText(), out = $('expOut');
     const fallback = () => { out.hidden = false; out.value = txt; out.focus(); out.select(); $('xMsg').textContent = 'Markiere den Text oben und kopiere ihn.'; };
-    try{ navigator.clipboard.writeText(txt).then(() => { $('xMsg').className = 'msg'; $('xMsg').textContent = `Kopiert: ${D.tests.length} Laute-Checks und ${D.log.length} Übungsrunden. Füge den Text jetzt auf deinem Gerät ein.`; }, fallback); }
+    try{ navigator.clipboard.writeText(txt).then(() => { $('xMsg').className = 'msg'; $('xMsg').textContent = `Kopiert: ${D.tests.length} Buchstaben-Checks und ${D.log.length} Übungsrunden. Füge den Text jetzt auf deinem Gerät ein.`; }, fallback); }
     catch(e){ fallback(); }
   };
   $('impBtn').onclick = () => {
     const m = $('xMsg');
-    try{ const r = importText($('impIn').value); m.className = 'msg'; m.textContent = `Übernommen: ${r.tests} Laute-Checks und ${r.log} Übungsrunden.`; $('impIn').value = ''; renderDash(); $('xMsg').className = 'msg'; $('xMsg').textContent = m.textContent; }
+    try{ const r = importText($('impIn').value); m.className = 'msg'; m.textContent = `Übernommen: ${r.tests} Buchstaben-Checks und ${r.log} Übungsrunden.`; $('impIn').value = ''; renderDash(); $('xMsg').className = 'msg'; $('xMsg').textContent = m.textContent; }
     catch(e){ m.className = 'msg err'; m.textContent = 'Dieser Text enthält keine Ergebnisse. Kopiere den ganzen Text, der mit ANLAUTE1 beginnt.'; }
   };
   confirmBtn('delAll', 'delRow', 'Wirklich alle Ergebnisse auf diesem iPad löschen?', 'Ja, alle löschen', () => { D.log = []; D.tests = []; saveD(); selKid = null; renderDash(); });
@@ -1895,7 +1895,7 @@ async function buildPdf(kids, withClass){
     for(let start = 0; start < Math.max(1, kids.length); start += perPage){
       const pg = doc.addPage([W, H]);
       txt(pg, 'Lernstand Anlaute', 36, H - 50, 22, B);
-      txt(pg, `Klassenübersicht · Grundlage: letzter Laute-Check pro Kind · ${today}`, 36, H - 68, 10, F, P.grey);
+      txt(pg, `Klassenübersicht · Grundlage: letzter Buchstaben-Check pro Kind · ${today}`, 36, H - 68, 10, F, P.grey);
       let y = H - top + 14;
       ITEMS.forEach((it, j) => { const x = 36 + nameW + j * cell; const s = pdfSafe(it.a); const sz = s.length > 2 ? 5.5 : s.length > 1 ? 6.5 : 8; txt(pg, s, x + (cell - 2 - width(s, sz, B)) / 2, y, sz, B); });
       y -= rowH;
@@ -1931,8 +1931,8 @@ async function buildPdf(kids, withClass){
     /* Seite: Übersicht Übungen */
     {
       const W = 842, H = 595; let pg = doc.addPage([W, H]);
-      txt(pg, 'Übungen und Laute-Check pro Kind', 36, H - 50, 18, B);
-      const cols = [['Nr. und Name', 36], ['Laute-Check', 200], ['Datum', 300], ['Übungsrunden', 380], ['Anlaute 1. Versuch', 480], ['Artikel 1. Versuch', 600], ['Zuletzt aktiv', 720]];
+      txt(pg, 'Übungen und Buchstaben-Check pro Kind', 36, H - 50, 18, B);
+      const cols = [['Nr. und Name', 36], ['Buchstaben-Check', 200], ['Datum', 300], ['Übungsrunden', 380], ['Anlaute 1. Versuch', 480], ['Artikel 1. Versuch', 600], ['Zuletzt aktiv', 720]];
       let y = H - 90;
       const head = () => { cols.forEach(([l, x]) => txt(pg, l, x, y, 9, B, P.grey)); y -= 8; pg.drawLine({ start: {x: 36, y}, end: {x: W - 36, y}, thickness: .6, color: P.line }); y -= 16; };
       head();
@@ -1964,7 +1964,7 @@ async function buildPdf(kids, withClass){
     txt(pg, 'Name:', 40, y - 34, 11, F, P.grey);
     pg.drawLine({ start: {x: 78, y: y - 36}, end: {x: W - 120, y: y - 36}, thickness: .6, color: P.grey });
     y -= 62;
-    txt(pg, t ? `Laute-Check vom ${fmtDate(t.ts)}: ${knownCount(t)} von ${t.n} Lauten erkannt${t.done ? '' : ' (nicht fertig gemacht)'}` : 'Noch kein Laute-Check gemacht.', 40, y, 11, B, P.main); y -= 22;
+    txt(pg, t ? `Buchstaben-Check vom ${fmtDate(t.ts)}: ${knownCount(t)} von ${t.n} Lauten erkannt${t.done ? '' : ' (nicht fertig gemacht)'}` : 'Noch kein Buchstaben-Check gemacht.', 40, y, 11, B, P.main); y -= 22;
     const cw = 62, ch = 44, perRow = 8;
     ITEMS.forEach((it, j) => {
       const x = 40 + (j % perRow) * (cw + 3), yy = y - Math.floor(j / perRow) * (ch + 4) - ch;
@@ -1981,8 +1981,8 @@ async function buildPdf(kids, withClass){
     const line = (s2, size = 10, font = F, color = P.ink) => { wrap(s2, size, W - 80, font).forEach(l => { txt(pg, l, 40, y, size, font, color); y -= size + 4; }); };
     const unknown = t ? ITEMS.map(i => i.a).filter(a => testStatus(t, a) === 'n') : [];
     section('Noch üben');
-    line(unknown.length ? unknown.join(', ') : (t ? 'Keine offenen Laute aus dem letzten Laute-Check.' : '–')); y -= 8;
-    section('Verlauf Laute-Check');
+    line(unknown.length ? unknown.join(', ') : (t ? 'Keine offenen Laute aus dem letzten Buchstaben-Check.' : '–')); y -= 8;
+    section('Verlauf Buchstaben-Check');
     if(s.tests.length) s.tests.slice(0, 6).forEach(x => line(`${fmtDate(x.ts)}: ${knownCount(x)} von ${x.n} erkannt${x.done ? '' : ' (abgebrochen)'}`));
     else line('Noch keiner gemacht.');
     y -= 8;
