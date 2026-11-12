@@ -625,6 +625,13 @@ textarea{ font: inherit; width:100%; box-sizing:border-box; min-height: 110px; b
 .sel{ min-height: 48px; max-width: 100%; margin-top: 10px; padding: 6px 12px; border: 2px solid var(--line); border-radius: 14px;
   background: var(--surface); color: var(--ink); font: inherit; font-size: var(--text-base); }
 
+.pp-back{ align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 6px 18px 6px 12px;
+  border-radius: var(--radius-pill); border: 2px solid var(--line); background: var(--surface); color: var(--ink);
+  font-size: var(--text-sm); font-weight: var(--font-bold); text-decoration: none; transition: transform .15s var(--ease), border-color .15s; }
+.pp-back svg{ width: 22px; height: 22px; flex: none; }
+.pp-back:active{ transform: scale(.96); }
+@media (hover:hover){ .pp-back:hover{ border-color: var(--main); } }
+
 @media (prefers-reduced-motion: reduce){
   *, *::before, *::after{ animation: none !important; transition: none !important; }
 }
@@ -640,6 +647,7 @@ textarea{ font: inherit; width:100%; box-sizing:border-box; min-height: 110px; b
 <!-- ÜBERSICHT -->
 <section id="start" class="view">
   <div class="wrap">
+    <a class="pp-back" href="../index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Zurück zum Pausenplatz</a>
     <div class="start-head">
       <h1 class="title"><span class="anl-mark">A</span>nlaute</h1>
       <div class="head-actions">
