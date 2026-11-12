@@ -1282,7 +1282,14 @@ function answer(b){
     recItem(right ? {k: item.id, ok: true} : {k: item.id, ok: false, pick: b.dataset.v});
     R.done.push(item);
     drawStrip();
-    clearTimeout(R.timer); R.timer = setTimeout(nextCard, 700);
+    let delay = 700;
+    if(!right){
+      /* Mündliche Korrektur: das Kind hört den richtigen Artikel mit dem Wort */
+      say([{text: 'Es heisst', rate: .85}, {text: `${item.art} ${item.w}.`, rate: .75}], $('card'));
+      const f = ({ normal: 1, langsam: .78, sehrlangsam: .62 })[S.tempo] || .78;
+      delay = 1200 + Math.round(2200 / f);
+    }
+    clearTimeout(R.timer); R.timer = setTimeout(nextCard, delay);
     return;
   }
   const ok = b.dataset.v === (mode === 'artikel' ? item.art : item.a);
