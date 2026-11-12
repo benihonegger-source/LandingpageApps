@@ -1000,6 +1000,8 @@ const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j = M
 const TTS = 'speechSynthesis' in window;
 const AC = window.AudioContext || window.webkitAudioContext;
 let actx = null; const BUF = {};
+/* iPad/iPhone: Ton auch dann abspielen, wenn das Gerät auf «Stumm» steht (Safari 17+) */
+try{ if(navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}
 function initAudio(){
   if(!AC || actx) return;
   try{ actx = new AC(); }catch(e){ actx = null; return; }
@@ -1012,7 +1014,7 @@ function initAudio(){
 /* iPad: Ton wird beim ersten Tipp freigeschaltet */
 function unlockAudio(){
   initAudio();
-  if(actx && actx.state !== 'running'){
+  if(actx && actx.state !== 'running'){   /* auch 'interrupted' nach App-Wechsel am iPad */
     try{ actx.resume(); const s = actx.createBufferSource(); s.buffer = actx.createBuffer(1, 1, 22050); s.connect(actx.destination); s.start(0); }catch(e){}
   }
 }
@@ -1047,11 +1049,11 @@ function speakOne(t){
   });
 }
 function playBuf(k){
-  return new Promise(res => {
+  return new Promise(async res => {
     const b = BUF[k];
     if(!actx || !b) return res();
     try{
-      if(actx.state !== 'running') actx.resume();
+      if(actx.state !== 'running'){ try{ await Promise.race([actx.resume(), wait(600)]); }catch(e){} }
       const s = actx.createBufferSource(); s.buffer = b; s.connect(actx.destination);
       let done = false;
       const fin = () => { if(!done){ done = true; clearTimeout(to); if(curSrc === s) curSrc = null; res(); } };
