@@ -42,5 +42,9 @@ Anlaute: Die App speichert keine Namen. Die Kinder wählen ein Bild als Erkennun
 Zuordnung zu den Namen macht die Lehrperson auf Papier. Laute-Check und Übungsergebnisse bleiben
 im Browser des jeweiligen iPads. Der PDF-Bericht wird auf dem Gerät erzeugt und heruntergeladen.
 
+Blitzlicht: Die App speichert keine Namen und nur die Übung des Kindes, das gerade am Gerät ist.
+Mit «Nächstes Kind» (Lehrpersonen-Bereich mit PIN) wird sie gelöscht. Vorgelesen wird nur mit einer
+Premium-Stimme, die lokal auf dem Gerät läuft.
+
 Beim Einbauen einer neuen App darauf achten, dass sie keine Schriften oder Skripte von fremden
 Adressen lädt (z.B. `fonts.googleapis.com`).

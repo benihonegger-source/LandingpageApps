@@ -35,5 +35,11 @@ window.APPS = [
     titel:  "Tierbibliothek",
     uebt:   "Wissen über heimische Wildtiere, mit Videos",
     klasse: "2. Klasse"
+  },
+  {
+    datei:  "apps/blitzlesen.html",
+    titel:  "Blitzlicht",
+    uebt:   "Blitzlesen: die 100 häufigsten Wörter schnell erkennen",
+    klasse: "1. und 2. Klasse"
   }
 ];
