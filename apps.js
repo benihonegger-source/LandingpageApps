@@ -41,5 +41,11 @@ window.APPS = [
     titel:  "Blitzlicht",
     uebt:   "Blitzlesen: die 100 häufigsten Wörter schnell erkennen",
     klasse: "1. und 2. Klasse"
+  },
+  {
+    datei:  "apps/lesezug.html",
+    titel:  "Lesezug",
+    uebt:   "Lesen lernen: hören, Laute, Silben, Wörter, Sätze, Blitzlesen",
+    klasse: "1. und 2. Klasse"
   }
 ];
