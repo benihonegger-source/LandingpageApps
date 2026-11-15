@@ -29,6 +29,27 @@ Sehen die Kinder noch die alte Version: Seite einmal neu laden.
 2. In `apps.js` einen Eintrag kopieren und anpassen (Komma zwischen den Einträgen nicht vergessen).
    Die Reihenfolge in der Liste ist die Reihenfolge der Felder.
 
+## Lernstand-Code und Lehrerzimmer
+
+Jede Lern-App mit Lernstand hat auf der Startseite den Knopf **«Lernstand-Code»**. Er zeigt einen QR-Code
+mit dem aktuellen Lernstand (bei Anlaute und Lesezug: für das gewählte Erkennungsbild, umschaltbar).
+
+Das **Lehrerzimmer** (`lehrerzimmer.html`) liest die Codes ein und macht daraus druckbare Blätter
+(ganze A4-Seite oder halbe Seite zum Einkleben ins Lernheft). Mehrere Codes nacheinander scannen, dann alle zusammen drucken.
+Zugang: auf dem Pausenplatz das blasse **Zahnrad oben rechts zwei Sekunden gedrückt halten**.
+
+- Der Code enthält keinen Namen. Auf dem Blatt ist ein leeres Feld für den Namen von Hand.
+- Das Lehrerzimmer speichert nichts. Die Kamera wird nur auf dem Gerät ausgewertet, nichts geht ins Internet.
+- Die Kamera funktioniert nur über `https` (GitHub Pages). Ohne Kamera: «Foto des Codes wählen».
+- Tierbibliothek hat keinen Lernstand und darum keinen Code.
+
+**Neue App anschliessen:** den Block zwischen `<!-- LERNSTAND-QR: Anfang -->` und `<!-- LERNSTAND-QR: Ende -->`
+aus einer bestehenden App in den `<head>` der neuen App kopieren. Dann in der App
+`LernstandQR.init({ app:'kennung', title:'Name', build(){ return { s:'Untertitel', b:[ …Blöcke… ] }; } })` aufrufen
+und einen Knopf mit `LernstandQR.open()` auf die Startseite setzen. Mögliche Blöcke: `kpi`, `h`, `p`, `list`, `chips`,
+`tab`, `grid`, `tiles`, `bars`, `spark`, `legend`, `cols` (Beispiele in den bestehenden Apps).
+Das Lehrerzimmer muss dafür nicht geändert werden.
+
 ## Datenschutz
 
 Die Startseite und alle Apps bauen keine Verbindungen ins Internet auf. Die Schriften sind direkt
