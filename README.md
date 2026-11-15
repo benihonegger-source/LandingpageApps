@@ -46,5 +46,9 @@ Blitzlicht: Die App speichert keine Namen und nur die Übung des Kindes, das ger
 Mit «Nächstes Kind» (Lehrpersonen-Bereich mit PIN) wird sie gelöscht. Vorgelesen wird nur mit einer
 Premium-Stimme, die lokal auf dem Gerät läuft.
 
+Lesezug: Die App speichert keine Namen. Die Kinder wählen ein Erkennungsbild (gleiche Nummern wie in der
+Anlaute-App). Ergebnisse und Regler-Einstellungen bleiben im Browser des jeweiligen Geräts. Die Laute kommen aus
+den eigenen Aufnahmen, Anleitungen und Wörter liest die normale Stimme des Geräts vor (keine Premium-Stimme).
+
 Beim Einbauen einer neuen App darauf achten, dass sie keine Schriften oder Skripte von fremden
 Adressen lädt (z.B. `fonts.googleapis.com`).
