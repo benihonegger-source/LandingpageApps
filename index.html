@@ -333,6 +333,29 @@ a.feld.hopp{animation:hopp .38s cubic-bezier(.3,1.5,.5,1)}
   .reihe.paar .los{grid-column:1}
 }
 
+
+/* ---------- Lehrerzimmer: dezentes Zahnrad oben rechts, öffnet erst nach 2 Sekunden Drücken ---------- */
+.zimmer{
+  position:absolute;
+  top:max(10px, env(safe-area-inset-top, 0px));
+  right:max(10px, env(safe-area-inset-right, 0px));
+  width:48px;height:48px;padding:6px;
+  border:0;border-radius:50%;background:none;
+  color:var(--tinte-matt);opacity:.28;
+  cursor:pointer;
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation;
+  transition:opacity .2s;
+}
+.zimmer:hover,.zimmer:focus-visible,.zimmer.halten{opacity:.85}
+.zimmer:focus-visible{outline:3px solid var(--tinte);outline-offset:2px}
+.zimmer svg{width:100%;height:100%;display:block;overflow:visible}
+.zimmer .ring{fill:none;stroke:var(--rosa-tief);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:69.2;stroke-dashoffset:69.2;transform:rotate(-90deg);transform-origin:12px 12px}
+.zimmer.halten .ring{stroke-dashoffset:0;transition:stroke-dashoffset 2s linear}
+.zimmer.halten .rad{transform:rotate(60deg);transition:transform 2s linear}
+.zimmer .rad{transform-origin:12px 12px}
+.zimmer.wackel{animation:wackel .35s}
+@keyframes wackel{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
@@ -350,6 +373,12 @@ a.feld.hopp{animation:hopp .38s cubic-bezier(.3,1.5,.5,1)}
   </filter>
 </svg>
 
+<button class="zimmer" id="zimmer" type="button" aria-label="Lehrerzimmer für Erwachsene. Zwei Sekunden gedrückt halten.">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <g class="rad" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.6"/><path d="M12 4.2v1.6M12 18.2v1.6M4.2 12h1.6M18.2 12h1.6M6.5 6.5l1.1 1.1M16.4 16.4l1.1 1.1M6.5 17.5l1.1-1.1M16.4 7.6l1.1-1.1"/><circle cx="12" cy="12" r="5.6"/></g>
+    <circle class="ring" cx="12" cy="12" r="11"/>
+  </svg>
+</button>
 <main class="seite">
   <header class="kopf">
     <p class="ort">Pausenplatz</p>
@@ -366,6 +395,7 @@ a.feld.hopp{animation:hopp .38s cubic-bezier(.3,1.5,.5,1)}
     <h2>Für Lehrpersonen</h2>
     <p>Die Spiele laufen direkt im Browser, ohne Anmeldung und ohne Installation. Mit dem Knopf «Pausenplatz» in jeder App kommen die Kinder wieder hierher.</p>
     <p>Neue Spiele und neue Versionen kommen über die Datei <code>apps.js</code> und den Ordner <code>apps</code> auf die Seite.</p>
+    <p>Lernstand einlesen und drucken: im Lehrerzimmer. Dazu das Zahnrad oben rechts zwei Sekunden gedrückt halten.</p>
   </footer>
 </main>
 
@@ -430,6 +460,35 @@ a.feld.hopp{animation:hopp .38s cubic-bezier(.3,1.5,.5,1)}
     a.classList.remove('hopp'); void a.offsetWidth; a.classList.add('hopp');
     setTimeout(function(){ window.location.href = a.href; }, 360);
   });
+})();
+</script>
+<script>
+/* Lehrerzimmer: nur mit langem Drücken (2 Sekunden), damit Kinder nicht zufällig hineinkommen */
+(function(){
+  var b = document.getElementById('zimmer');
+  if(!b) return;
+  var ZIEL = 'lehrerzimmer.html', DAUER = 2000, timer = null;
+  function los(){
+    if(timer) return;
+    b.classList.remove('wackel'); b.classList.add('halten');
+    timer = setTimeout(function(){ timer = null; b.classList.remove('halten'); window.location.href = ZIEL; }, DAUER);
+  }
+  function halt(kurz){
+    if(!timer) return;
+    clearTimeout(timer); timer = null;
+    b.classList.remove('halten');
+    if(kurz){ void b.offsetWidth; b.classList.add('wackel'); }
+  }
+  b.addEventListener('pointerdown', function(e){ if(e.button === 0 || e.pointerType !== 'mouse'){ los(); } });
+  b.addEventListener('pointerup', function(){ halt(true); });
+  b.addEventListener('pointerleave', function(){ halt(false); });
+  b.addEventListener('pointercancel', function(){ halt(false); });
+  b.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  b.addEventListener('click', function(e){ e.preventDefault(); });
+  b.addEventListener('keydown', function(e){ if((e.key === 'Enter' || e.key === ' ') && !e.repeat){ e.preventDefault(); los(); } });
+  b.addEventListener('keyup', function(e){ if(e.key === 'Enter' || e.key === ' '){ halt(true); } });
+  b.addEventListener('blur', function(){ halt(false); });
+  b.addEventListener('animationend', function(){ b.classList.remove('wackel'); });
 })();
 </script>
 </body>
