@@ -150,6 +150,19 @@ section.stimme .verbot{
   section.stimme{margin-inline:calc(var(--gap-l) * -1) calc(var(--gap) * -1);padding-inline:var(--gap-l)}
 }
 
+/* Anleitung Lernstand: echte Abfolge, darum nummeriert */
+ol.schritte{counter-reset:s;list-style:none;margin:var(--gap) 0;padding:0;display:grid;gap:var(--gap-s);max-width:65ch}
+ol.schritte > li{counter-increment:s;display:grid;grid-template-columns:2.6rem minmax(0,1fr);column-gap:var(--gap-s);align-items:start}
+ol.schritte > li::before{
+  content:counter(s);grid-row:1 / span 2;
+  font-family:var(--font-chalk);font-weight:var(--font-bold);font-size:var(--text-3xl);line-height:var(--leading-tight);
+  color:var(--rosa-tief);text-align:center;
+}
+ol.schritte b{display:block;font-size:var(--text-base);line-height:var(--leading-heading);margin-bottom:var(--gap-xs)}
+ol.schritte p{margin:0}
+.zahnrad{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;color:var(--tinte)}
+.merke{padding:var(--gap-s) var(--gap);background:var(--blatt);border-radius:4px;border-left:4px solid var(--gelb);max-width:65ch}
+.merke p:last-child{margin-bottom:0}
 footer{padding-top:var(--gap);border-top:2px solid var(--platz-tief);font-size:var(--text-sm);color:var(--tinte-matt)}
 
 @media print{
@@ -176,6 +189,7 @@ footer{padding-top:var(--gap);border-top:2px solid var(--platz-tief);font-size:v
   <nav class="inhalt" aria-label="Inhalt">
     <ul>
       <li><a href="#einsatz">Im Unterricht</a></li>
+      <li><a href="#lernstand">Lernstand einlesen</a></li>
       <li><a href="#datenschutz">Datenschutz</a></li>
       <li><a href="#stimme">Meine Stimme</a></li>
       <li><a href="#nutzung">Urheberrecht und Nutzung</a></li>
@@ -185,7 +199,21 @@ footer{padding-top:var(--gap);border-top:2px solid var(--platz-tief);font-size:v
   <section id="einsatz">
     <h2>Im Unterricht</h2>
     <p>Die Spiele laufen direkt im Browser, ohne Anmeldung und ohne Installation. Mit dem Knopf «Pausenplatz» in jeder App kommen die Kinder zurück zur Übersicht.</p>
-    <p>Lernstand einlesen und drucken: im Lehrerzimmer. Dazu auf dem Pausenplatz das Zahnrad oben rechts zwei Sekunden gedrückt halten.</p>
+    <p>Den Lernstand der Kinder sehen Sie nicht in den Spielen selbst, sondern im Lehrerzimmer. So bleiben Auswertungen den Erwachsenen vorbehalten.</p>
+  </section>
+
+  <section id="lernstand">
+    <h2>Lernstand einlesen</h2>
+    <p>Jedes Spiel (ausser der Tierbibliothek) zeigt den Lernstand als QR-Code, den «Lernstand-Code». Im Lehrerzimmer lesen Sie ihn ein und drucken ein Blatt für das Lernheft.</p>
+    <ol class="schritte">
+      <li><b>Code im Spiel öffnen</b><p>Auf dem Gerät des Kindes im Spiel auf «Lernstand-Code» tippen. Üben mehrere Kinder am selben Gerät, zuerst die Nummer des Kindes wählen.</p></li>
+      <li><b>Lehrerzimmer öffnen</b><p>Auf einem zweiten Gerät den Pausenplatz öffnen. Oben rechts ist ein blasses Zahnrad <svg class="zahnrad" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.6"/><path d="M12 4.2v1.6M12 18.2v1.6M4.2 12h1.6M18.2 12h1.6M6.5 6.5l1.1 1.1M16.4 16.4l1.1 1.1M6.5 17.5l1.1-1.1M16.4 7.6l1.1-1.1"/><circle cx="12" cy="12" r="5.6"/></g></svg>. Den Finger zwei Sekunden darauf halten, bis sich der Ring um das Zahnrad geschlossen hat. Ein kurzes Antippen genügt nicht; so kommen Kinder nicht zufällig hinein.</p></li>
+      <li><b>Code scannen</b><p>Im Lehrerzimmer auf «Code scannen» tippen, den Zugriff auf die Kamera erlauben und die Kamera auf den Code richten. Ohne Kamera: ein Foto des Codes machen und über «Foto des Codes wählen» öffnen.</p></li>
+      <li><b>Blatt drucken</b><p>Ganze oder halbe Seite wählen und «Drucken» antippen. Den Namen des Kindes tragen Sie von Hand auf dem Ausdruck ein.</p></li>
+    </ol>
+    <div class="merke">
+      <p><b>Gut zu wissen:</b> Der Code enthält den Lernstand, aber keinen Namen. Das Lehrerzimmer speichert nichts und sendet nichts. Wenn Sie es schliessen, ist es wieder leer. Die Kamera wird nur auf dem Gerät ausgewertet.</p>
+    </div>
   </section>
 
   <section id="datenschutz">
