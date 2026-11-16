@@ -2301,9 +2301,6 @@ var qrcode = function () {
       <button class="btn round noprint" data-home aria-label="Stellwerk schliessen"><svg class="icon"><use href="#i-back"/></svg></button>
       <h1>Stellwerk</h1>
       <span class="spacer"></span>
-      <div class="tabs noprint" role="tablist">
-        <button data-tab="kind">Kind</button><button data-tab="einst">Einstellungen</button>
-      </div>
     </div>
     <div id="deskBody"></div>
   </div>
@@ -3925,9 +3922,8 @@ const PATTERN = {
 };
 
 /* ---------- Stellwerk zeichnen ---------- */
-let TAB = 'kind', SELKID = null;
-function openDesk(tab){ TAB = tab || TAB; if(tab === 'kind') SELKID = curKid(); show('desk'); drawDesk(); }
-document.querySelectorAll('.tabs [data-tab]').forEach(b => b.onclick = () => { TAB = b.dataset.tab; drawDesk(); });
+let SELKID = null;
+function openDesk(){ show('desk'); drawDesk(); }
 function deskKids(){
   const ks = kidKeys();
   if(DB.kids.p0 && DB.kids.p0.log.length) ks.unshift('p0');
@@ -3938,42 +3934,8 @@ function lampCell(r, stuck){
   return `<span class="cell ${stuck ? 'stuck' : ''}"><span class="lamp ${r.status}" title="${STATUS_TXT[r.status]}"></span><small>${pctTxt}<br>St. ${r.lv}${r.fixed ? '•' : ''}</small></span>`;
 }
 function drawDesk(){
-  document.querySelectorAll('.tabs [data-tab]').forEach(b => b.setAttribute('aria-current', b.dataset.tab === TAB ? 'page' : 'false'));
-  const body = $('#deskBody');
-  if(TAB === 'kind') body.innerHTML = kindHTML();
-  else body.innerHTML = einstHTML();
+  $('#deskBody').innerHTML = einstHTML();
   bindDesk();
-}
-function kindHTML(){
-  const ks = deskKids();
-  if(!SELKID || !ks.includes(SELKID)) SELKID = ks.find(k => (DB.kids[k] || {log:[]}).log.length) || ks[0];
-  const noData = !ks.some(k => (DB.kids[k] || {log:[]}).log.length);
-  const k = SELKID, a = analyze(k);
-  let h = '';
-  if(noData) return `<div class="panel empty"><h2>Noch keine Fahrten</h2><p class="hint" style="margin:0 auto">Sobald ein Kind übt, sehen Sie hier für jeden Bahnhof, wie sicher es ist, welche Fehler typisch sind und wo es hängt – zum Beispiel beim Zusammenziehen der Laute.${DB.set.kids ? '' : ' Wenn mehrere Kinder dasselbe Gerät benutzen: unter «Einstellungen» die Anzahl Kinder festlegen.'}</p></div>`;
-  if(ks.length > 1) h += `<div class="kidsel noprint" role="group" aria-label="Kind wählen">${ks.map(x => `<button data-kid="${x}" aria-current="${x === k}" aria-label="${kidLabel(x)}"><small>${kidNo(x) || ''}</small>${kidPic(x) || 'Gerät'}</button>`).join('')}</div>`;
-  h += `<div class="panel"><div class="kidhead">${kidPic(k) ? `<span class="kpic">${kidPic(k)}</span>` : ''}<div style="flex:1"><h2>${kidLabel(k)}</h2>
-    <p class="muted">${a.total ? `${a.total} Aufgaben · zuletzt geübt am ${fmtD(a.last)}` : 'Noch keine Aufgaben gelöst.'}${a.stuck ? ` · <span class="stuckname">hängt bei ${a.stuck} ${ST[a.stuck].name}</span>` : ''}</p></div>
-    <button class="btn small noprint" data-print>${icon('i-print')}Drucken</button></div></div>`;
-  h += '<div class="stgrid">';
-  DB.set.on.forEach(n => {
-    const r = a.st[n];
-    const subs = Object.entries(r.subs).map(([u, s]) => {
-      const p = s.ok / s.n; const c = p >= .8 ? 'var(--go)' : p >= .6 ? 'var(--signal)' : 'var(--stop)';
-      return `<div class="subrow"><span>${SUBS[u]}</span><span class="track"><i style="width:${Math.round(p * 100)}%;background:${c}"></i></span><span class="small">${Math.round(p * 100)}%</span></div>`;
-    }).join('');
-    const spark = r.days.length > 1 ? `<div class="spark" title="Trefferquote pro Übungstag">${r.days.map(p => `<i style="height:${Math.max(3, p * 26)}px;background:${p >= .8 ? 'var(--go)' : p >= .6 ? 'var(--signal)' : 'var(--stop)'}"></i>`).join('')}</div>` : '';
-    h += `<article class="stcard ${a.stuck === n ? 'stuck' : ''}"><header><span class="hd">${n}</span><h3>${ST[n].name}</h3><span class="lamp ${r.status}" title="${STATUS_TXT[r.status]}"></span></header>
-      <p class="small muted">${r.recN ? `${Math.round(r.acc * 100)} % richtig (letzte ${r.recN}) · ${r.n} Aufgaben total · ${STATUS_TXT[r.status]}` : 'Noch nicht geübt.'}</p>
-      ${spark}${subs}
-      ${r.patterns.map(p => `<p class="pattern">${esc(p)}</p>`).join('')}
-      ${r.tips.slice(0, 2).map(p => `<p class="tip">${esc(p)}</p>`).join('')}
-      <p class="small"><b>Stufe ${r.lv}</b> von ${ST[n].max} · ${r.fixed ? 'im Regler festgehalten' : 'passt sich automatisch an'}</p>
-    </article>`;
-  });
-  h += '</div>';
-  if(a.total) h += `<div class="actions noprint" style="justify-content:flex-start"><button class="btn small danger" data-delkid="${k}">Daten dieses Kindes löschen</button></div>`;
-  return h;
 }
 const LEVELTXT = {
   1:'Stufe 1: Reime erkennen, Silben bei kurzen Wörtern, Anlaut ja/nein. Stufe 2: Reimwort finden, Bild zum Anlaut, Laute zählen (2–3). Stufe 3: Reim-Ausreisser, lange Wörter, Laut im Wort, Laute zählen (4–5).',
@@ -3986,7 +3948,7 @@ function einstHTML(){
   return `<div class="panel"><h2>Kinder</h2>
     <div class="field"><div><b>Anzahl Kinder</b><p class="hint">Jedes Kind wählt ein Erkennungsbild (Nr. 1 bis ${s.kids || 'n'}). Gleiche Bilder und Nummern wie in der Anlaute-App. Keine Namen in der App.</p></div>
       <div class="stepper"><button class="btn round" data-kids="-1" aria-label="Ein Kind weniger">${icon('i-minus')}</button><b>${s.kids}</b><button class="btn round" data-kids="1" aria-label="Ein Kind mehr">${icon('i-plus')}</button></div></div>
-    <div class="field"><div><b>Liste zum Ausdrucken</b><p class="hint">Bilder mit Nummern, daneben Platz für die Namen von Hand.</p></div><button class="btn small" data-printlist>${icon('i-print')}Liste drucken</button></div></div>
+</div>
 
   <div class="panel"><h2>Liniennetz</h2>
     <div class="field"><div><b>Sichtbare Bahnhöfe</b><p class="hint">Ausgeschaltete Bahnhöfe sehen die Kinder nicht.</p></div>
@@ -4001,14 +3963,12 @@ function einstHTML(){
 
   <div class="panel"><h2>Daten und Zugang</h2>
     <p class="hint">Alle Ergebnisse bleiben im Browser dieses Geräts. Nichts wird ins Internet übertragen. Wird der Browserverlauf gelöscht, sind auch die Ergebnisse weg.</p>
+    <p class="hint" style="margin-top:8px">Den Lernstand eines Kindes sehen Sie im Lehrerzimmer: Auf der Startseite «Lernstand-Code» antippen und den Code dort scannen.</p>
     <div class="actions" style="justify-content:flex-start"><button class="btn small" data-pinnew>PIN ändern</button><button class="btn small danger" data-wipe>Alle Lerndaten löschen</button></div>
     ${storageOK ? '' : '<p class="msg">Achtung: Dieser Browser lässt kein Speichern zu (privates Surfen?). Ergebnisse gehen beim Schliessen verloren.</p>'}</div>`;
 }
 function bindDesk(){
   const B = $('#deskBody');
-  B.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { TAB = b.dataset.goto; drawDesk(); });
-  B.querySelectorAll('[data-kid]').forEach(b => b.onclick = () => { SELKID = b.dataset.kid; TAB = 'kind'; drawDesk(); });
-  B.querySelectorAll('[data-print]').forEach(b => b.onclick = () => window.print());
   B.querySelectorAll('[data-fix]').forEach(b => b.onclick = () => {
     const [n, v] = b.dataset.fix.split(':').map(Number);
     const f = DB.set.fixed[SELKID] ||= {};
@@ -4041,12 +4001,6 @@ function bindDesk(){
     if(await dialog({title:'Alle Lerndaten löschen?', text:'Die Ergebnisse aller Kinder werden gelöscht. Einstellungen und PIN bleiben. Das lässt sich nicht rückgängig machen.', ok:'Alles löschen', danger:true})){
       DB.kids = {}; DB.set.fixed = {}; DB.cur = null; save(); drawDesk(); toast('Alle Lerndaten gelöscht.');
     }
-  });
-  B.querySelectorAll('[data-printlist]').forEach(b => b.onclick = () => {
-    const ks = kidKeys(); if(!ks.length){ toast('Zuerst die Anzahl Kinder festlegen.'); return; }
-    $('#deskBody').innerHTML = `<div class="panel"><h2>Erkennungsbilder Lesezug</h2><p class="hint noprint">Wird gedruckt …</p>
-      <table class="matrix" style="min-width:0"><tbody>${ks.map(k => `<tr><td class="who" style="width:90px"><span class="wpic" style="width:56px;height:56px">${kidPic(k)}</span>${kidNo(k)}</td><td style="text-align:left">${kidWord(k)}</td><td style="width:55%;border-bottom:1px solid var(--ink)"></td></tr>`).join('')}</tbody></table></div>`;
-    setTimeout(() => { window.print(); drawDesk(); }, 200);
   });
 }
 

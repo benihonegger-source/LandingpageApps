@@ -148,6 +148,9 @@ header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-be
 }
 .tab:hover{background:var(--ink-soft)}
 .tab[aria-selected="true"]{background:var(--paper);padding-bottom:10px}
+.btn .count{display:inline-grid;place-items:center;min-width:1.6em;height:1.6em;margin-left:8px;border-radius:999px;
+  background:#fff;color:var(--pen);font-family:var(--font-text);font-size:var(--text-sm);font-weight:var(--font-bold)}
+.err-row{margin-bottom:var(--gap)}
 .tab .count{display:inline-grid;place-items:center;min-width:1.6em;height:1.6em;margin-left:8px;border-radius:999px;
   background:var(--pen);color:#fff;font-family:var(--font-text);font-size:var(--text-sm);font-weight:var(--font-bold)}
 
@@ -344,27 +347,6 @@ footer{margin-top:var(--gap-air);font-size:var(--text-sm);color:var(--muted);max
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
 
-/* =========================================================
-   DRUCK / PDF
-   ========================================================= */
-#report{display:none}
-@media print{
-  @page{margin:14mm}
-  :root{--text-base:10.5pt}
-  body{background:#fff}
-  .app{display:none}
-  #report{display:block}
-  #report *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  #report h1{font-family:var(--font-display);font-weight:var(--font-black);font-size:var(--text-3xl);line-height:var(--leading-heading);margin:0}
-  #report .sub{color:var(--muted);margin:2px 0 var(--gap)}
-  #report h2{font-family:var(--font-display);font-size:var(--text-xl);line-height:var(--leading-heading);margin:var(--gap-wide) 0 var(--gap-tight);padding-bottom:4px;border-bottom:2px solid var(--ink)}
-  #report h3{font-family:var(--font-display);font-size:var(--text-base);margin:var(--gap) 0 var(--gap-tight)}
-  #report .facts{gap:var(--gap-wide);margin-bottom:var(--gap)}
-  #report .facts b{font-size:var(--text-xl)}
-  #report .hm{max-width:150mm}
-  #report .hm td{height:20px}
-  #report .stage{break-inside:avoid}
-}
 </style>
 <!-- LERNSTAND-QR: Anfang (Baustein für alle Lern-Apps, gleich in jeder App) -->
 <script>
@@ -2204,13 +2186,8 @@ var qrcode = function () {
     </div>
   </header>
 
-  <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tabTrain" aria-selected="true" aria-controls="viewTrain">Üben</button>
-    <button class="tab" role="tab" id="tabDash" aria-selected="false" aria-controls="viewDash">Lernstand<span class="count" id="errBadge" hidden>0</span></button>
-  </nav>
-
   <!-- ÜBEN -->
-  <section id="viewTrain" role="tabpanel" aria-labelledby="tabTrain">
+  <section id="viewTrain">
     <div class="levels" id="levels">
       <button class="level" data-l="1" aria-pressed="true"><span class="no">1</span><b>Kernaufgaben</b><small id="l1desc"></small></button>
       <button class="level" data-l="2" aria-pressed="false"><span class="no">2</span><b>Alle Aufgaben</b><small id="l2desc"></small></button>
@@ -2219,6 +2196,9 @@ var qrcode = function () {
     <div class="banner" id="errBanner" hidden>
       <span id="errBannerText"></span>
       <button class="btn line" id="errStop">Fehlertraining beenden</button>
+    </div>
+    <div class="err-row" id="errRow" hidden>
+      <button class="btn pen" id="errGo">Falsche Aufgaben nochmals rechnen<span class="count" id="errBadge">0</span></button>
     </div>
     <div class="workspace">
       <div class="page" id="taskCard" aria-live="polite"></div>
@@ -2230,16 +2210,13 @@ var qrcode = function () {
     </div>
   </section>
 
-  <!-- LERNSTAND -->
-  <section id="viewDash" role="tabpanel" aria-labelledby="tabDash" hidden></section>
 
   <div class="foot-row" style="margin-top:var(--gap-air)">
-    <footer>Es werden keine Daten gespeichert. Wer die Seite neu lädt oder schliesst, beginnt wieder mit einem leeren Heft. Den Lernstand vorher als PDF sichern oder als Lernstand-Code ins Lehrerzimmer übertragen.</footer>
+    <footer>Es werden keine Daten gespeichert. Wer die Seite neu lädt oder schliesst, beginnt wieder mit einem leeren Heft. Den Lernstand vorher als Lernstand-Code ins Lehrerzimmer übertragen.</footer>
     <button class="btn line" id="lsqrBtn"><svg class="qr" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2M20 14v.01M14 20h6v-3M18 17v.01"/></g></svg>Lernstand-Code</button>
   </div>
 </div>
 
-<div id="report"></div>
 
 <script>
 (function(){
@@ -2415,7 +2392,7 @@ function startErr(){
   S.queue=shuffle(keys.map(pairOf));
   S.errTotal=S.queue.length; S.errDone=0;
   S.mode='err'; S.summary=false;
-  showTab('train'); next();
+  next();
 }
 
 /* ---------- Darstellung Üben ---------- */
@@ -2438,19 +2415,20 @@ function exprSize(t){
 function renderTask(){
   const card=$('#taskCard');
   $('#errBanner').hidden = S.mode!=='err';
+  updateBadge();
   if(S.mode==='err') $('#errBannerText').textContent=`Fehler üben: ${S.errDone} von ${S.errTotal} verbessert`;
 
   if(S.summary){
     let score, stampTop, stampMain, line;
     if(S.mode==='err-done'){
       score=`${S.errTotal}<small> verbessert</small>`;
-      stampTop='Alle Fehler'; stampMain='korrigiert'; line='Jede falsche Aufgabe ist jetzt richtig gelöst. Im Lernstand sind sie gelb markiert.';
+      stampTop='Alle Fehler'; stampMain='korrigiert'; line='Jede falsche Aufgabe ist jetzt richtig gelöst.';
     } else {
       const n=S.roundRes.filter(Boolean).length;
       score=`${n}<small> von ${ROUND}</small>`;
       [stampTop,stampMain,line] =
         n===10 ? ['Alles','richtig','Keine einzige falsche Aufgabe. Probier doch das nächste Level.'] :
-        n>=8   ? ['Sehr','gut','Nur noch wenige Fehler. Die findest du im Lernstand.'] :
+        n>=8   ? ['Sehr','gut','Nur noch wenige Fehler. Du kannst sie gleich nochmals rechnen.'] :
         n>=5   ? ['Gut','gemacht','Die falschen Aufgaben kommen in den nächsten Runden öfter dran.'] :
                  ['Weiter','üben','Rechne noch eine Runde. Schwierige Aufgaben kommen öfter, bis sie sitzen.'];
     }
@@ -2458,9 +2436,9 @@ function renderTask(){
       <div class="summary-head"><div class="score">${score}</div>
       <div class="stamp" aria-hidden="true"><span>${stampTop}<b>${stampMain}</b></span></div></div>
       <p>${line}</p>
-      <div class="btn-row"><button class="btn" id="sumNext">Nächste Runde starten</button><button class="btn line" id="sumDash">Lernstand ansehen</button></div></div>`;
+      <div class="btn-row"><button class="btn" id="sumNext">Nächste Runde starten</button>${S.mode!=='err-done'&&openKeys(S.stage).length?`<button class="btn pen" id="sumErr">Falsche Aufgaben nochmals rechnen</button>`:''}</div></div>`;
     $('#sumNext').onclick=newRound;
-    $('#sumDash').onclick=()=>{ S.mode='train'; S.summary=false; showTab('dash'); };
+    if($('#sumErr')) $('#sumErr').onclick=startErr;
     renderPad(); return;
   }
 
@@ -2555,75 +2533,9 @@ function chips(stage,keys,cls){
     .map(k=>{const s=st(stage,k);return `<span class="chip ${cls}">${fmt(k)}<small>${s.w}× falsch</small></span>`;}).join('');
 }
 
-function renderDash(){
-  const stage=S.stage, view=$('#viewDash'), t=totals(stage);
-  if(!t.n){
-    const others = STAGES.filter(o=>o!==stage&&totals(o).n);
-    view.innerHTML=`<div class="firstuse"><h2>Noch leer: ${stageName(stage)}</h2>
-      <p>Rechne eine Runde mit zehn Aufgaben. Danach siehst du hier, welche Aufgaben schon sitzen und welche du verbessern kannst.</p>
-      <div class="btn-row"><button class="btn" id="goTrain">Erste Runde rechnen</button>
-      ${others.map(o=>`<button class="btn line" data-go="${o}">Lernstand ${stageName(o)} ansehen</button>`).join('')}</div></div>`;
-    $('#goTrain').onclick=()=>{ showTab('train'); newRound(); };
-    view.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>setStage(b.dataset.go));
-    return;
-  }
-  const open=openKeys(stage), fixed=fixedKeys(stage);
-  view.innerHTML=`<div class="dash-head"><h2>Lernstand ${stageName(stage)}</h2></div>${factsHTML(stage)}
-    <div class="dash">
-      <div class="panel"><h3>${stage==='h'?'Hundertereinmaleins':'Hundertertafel'}</h3>${heatmap(stage)}${LEGEND}</div>
-      <div>
-        <div class="panel">
-          <h3>Noch falsch</h3>
-          ${open.length?`<div class="chips">${chips(stage,open,'')}</div><button class="btn pen" id="practiceErr">${open.length===1?'Diese Aufgabe':'Diese '+open.length+' Aufgaben'} nochmals rechnen</button>`
-            :'<p class="empty">Keine offenen Fehler. Jede falsche Aufgabe wurde schon verbessert.</p>'}
-          <h3 style="margin-top:var(--gap-wide)">Verbessert</h3>
-          ${fixed.length?`<div class="chips">${chips(stage,fixed,'fixed')}</div>`:'<p class="empty">Hier erscheinen Aufgaben, die zuerst falsch und danach richtig gelöst wurden.</p>'}
-          <div class="printbox">
-            <div class="btn-row"><button class="btn" id="printBtn">Lernstand als PDF drucken</button>
-            <button class="btn line" id="lsqrBtn2"><svg class="qr" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2M20 14v.01M14 20h6v-3M18 17v.01"/></g></svg>Lernstand-Code</button>
-            <button class="btn quiet" id="resetBtn">Heft leeren</button></div>
-            <p class="hint">Im Druckfenster «Als PDF speichern» wählen. Der Ausdruck enthält alle drei Bereiche.</p>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  const pe=$('#practiceErr'); if(pe) pe.onclick=startErr;
-  $('#printBtn').onclick=()=>{ buildReport(); window.print(); };
-  $('#lsqrBtn2').onclick=()=>LernstandQR.open();
-  $('#resetBtn').onclick=()=>{
-    if(!confirm('Den ganzen Lernstand aller drei Bereiche löschen?')) return;
-    S.stats={}; updateBadge(); renderDash(); newRound();
-  };
-}
-function updateBadge(){ const n=openKeys(S.stage).length, b=$('#errBadge'); b.hidden=!n; b.textContent=n; }
-
-function buildReport(){
-  const d=new Date().toLocaleDateString('de-CH',{day:'numeric',month:'long',year:'numeric'});
-  let h=`<h1>Lernstand Multiplikation</h1><p class="sub">${d}</p>`;
-  let any=false;
-  for(const stage of STAGES){
-    if(!totals(stage).n) continue;
-    any=true;
-    const open=openKeys(stage), fixed=fixedKeys(stage);
-    h+=`<div class="stage"><h2>${stageName(stage)}</h2>${factsHTML(stage)}${heatmap(stage)}${LEGEND}
-      <h3>Noch falsch (${open.length})</h3>${open.length?`<div class="chips">${chips(stage,open,'')}</div>`:'<p class="empty">Keine.</p>'}
-      <h3>Verbessert (${fixed.length})</h3>${fixed.length?`<div class="chips">${chips(stage,fixed,'fixed')}</div>`:'<p class="empty">Keine.</p>'}</div>`;
-  }
-  if(!any) h+='<p>Es wurden noch keine Aufgaben gelöst.</p>';
-  $('#report').innerHTML=h;
-}
+function updateBadge(){ const n=openKeys(S.stage).length; $('#errBadge').textContent=n; $('#errRow').hidden = !n || S.mode==='err' || S.summary; }
 
 /* ---------- Steuerung ---------- */
-function showTab(t){
-  $('#viewTrain').hidden = t!=='train';
-  $('#viewDash').hidden = t!=='dash';
-  $('#tabTrain').setAttribute('aria-selected',t==='train');
-  $('#tabDash').setAttribute('aria-selected',t==='dash');
-  if(t==='dash') renderDash();
-}
-$('#tabTrain').onclick=()=>{ showTab('train'); if(S.mode==='err-done') newRound(); };
-$('#tabDash').onclick=()=>showTab('dash');
-
 function setStage(stage){
   if(stage===S.stage) return;
   S.stage=stage;
@@ -2634,7 +2546,6 @@ function setStage(stage){
     b.classList.toggle('on',on); b.setAttribute('aria-checked',on); b.tabIndex=on?0:-1;
   });
   levelDescs(); updateBadge(); newRound();
-  if(!$('#viewDash').hidden) renderDash();
 }
 $('#stageSlider').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; setStage(b.dataset.s); if(e.detail) b.blur(); });
 $('#stageSlider').addEventListener('keydown',e=>{
@@ -2654,6 +2565,7 @@ $('#levels').addEventListener('click',e=>{
   newRound();
 });
 $('#errStop').onclick=newRound;
+$('#errGo').onclick=startErr;
 
 /* ---------- Lernstand-Code fürs Lehrerzimmer ---------- */
 LernstandQR.init({

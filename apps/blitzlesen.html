@@ -2189,12 +2189,8 @@ var qrcode = function () {
 <section class="screen" id="s-dash" hidden aria-labelledby="t-dash">
   <div class="wrap">
     <div class="dhead">
-      <div><p class="kicker" style="margin:0 0 6px">Blitzlicht · Lehrperson</p><h1 id="t-dash">Leseergebnis</h1></div>
-      <div class="btn-row"><button class="btn" id="dash-print">Drucken</button><button class="btn primary" id="dash-close">Zurück zur Übung</button></div>
-    </div>
-    <div class="tabs" role="tablist">
-      <button role="tab" data-tab="ergebnis" aria-selected="true">Ergebnis</button>
-      <button role="tab" data-tab="einst" aria-selected="false">Einstellungen</button>
+      <div><p class="kicker" style="margin:0 0 6px">Blitzlicht · Lehrperson</p><h1 id="t-dash">Einstellungen</h1></div>
+      <div class="btn-row"><button class="btn primary" id="dash-close">Zurück zur Übung</button></div>
     </div>
     <div id="dash-body"></div>
   </div>
@@ -2503,7 +2499,7 @@ let pinBuf="", pinMode="enter", pinFirst="";
 function openPin(){
   pinBuf=""; pinMode = DB.settings.pin ? "enter" : "new";
   $("#t-pin").textContent = pinMode==="new" ? "PIN festlegen" : "PIN eingeben";
-  $("#pin-help").textContent = pinMode==="new" ? "Wähle 4 Ziffern. Damit kommen nur Erwachsene in die Übersicht." : "";
+  $("#pin-help").textContent = pinMode==="new" ? "Wähle 4 Ziffern. Damit kommen nur Erwachsene in die Einstellungen." : "";
   $("#pin-msg").textContent=""; drawDots(); show("s-pin");
   $("#pad button").focus();
 }
@@ -2567,58 +2563,20 @@ document.addEventListener("pointerover",e=>{
   const t=el("span",{class:"spark-tip"},esc(c.dataset.tip)); t.style.left=(cr.left-r.left+cr.width/2)+"px"; wrap.append(t);
 });
 
-let TAB="ergebnis";
-function openDash(){ TAB="ergebnis"; renderDash(); show("s-dash"); }
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{ TAB=b.dataset.tab; renderDash(); });
+function openDash(){ renderDash(); show("s-dash"); }
 $("#dash-close").onclick=renderStart;
-$("#dash-print").onclick=()=>{ try{ window.print(); }catch(e){} };
 function renderDash(){
-  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===TAB));
-  $("#dash-body").innerHTML = TAB==="ergebnis" ? dashResult() : dashSettings();
+  $("#dash-body").innerHTML = dashSettings();
   wireDash();
-}
-function dashResult(){
-  const k=S(), s=stats(k);
-  const warn = storageOK ? "" : `<div class="note warn">Dieser Browser erlaubt kein Speichern. Das Ergebnis verschwindet, wenn die Seite neu geladen wird.</div>`;
-  if(!s) return warn+`<div class="empty"><b>Noch keine Fotos</b>Sobald ein Kind einen Film gemacht hat, siehst du hier sein Ergebnis: welche Wörter sitzen, welche nicht und was es verwechselt hat.</div>`;
-  const typeArr=Object.entries(s.types).sort((a,b)=>b[1]-a[1]); const tmax=typeArr.length?typeArr[0][1]:1;
-  const errs=k.att.filter(a=>!a[2]).reverse();
-  const order={unsicher:0,"geübt":1,sicher:2};
-  const practiced=Object.keys(s.words).map(w=>({w,x:s.words[w],st:wordStatus(k,s.words[w],w)})).sort((a,b)=>order[a.st]-order[b.st]||WORDS.indexOf(a.w)-WORDS.indexOf(b.w));
-  const lv = s.lvMin===s.lvMax ? `Stufe ${s.lvMin} · ${LEVELS[s.lvMin].name}` : `Stufe ${s.lvMin} bis ${s.lvMax}`;
-  const spark=sparkline(s.films,Math.min(560,window.innerWidth-60),80);
-  return warn+`
-   <div class="next-kid noprint">
-     <p><b>Fertig angeschaut?</b> Mit «Nächstes Kind» wird dieses Ergebnis gelöscht und das nächste Kind beginnt neu.</p>
-     <button class="btn red" id="next-kid">Nächstes Kind</button>
-   </div>
-   <p class="when">Geübt von ${fmtTime(s.first)} bis ${fmtTime(s.last)} Uhr · ${s.films.length} ${s.films.length===1?"Film":"Filme"} · ${lv}</p>
-   <div class="kpis">
-     <div class="kpi"><b>${pct(s.ok,s.n)} %</b><span>richtig · ${s.ok} von ${s.n} Fotos</span></div>
-     <div class="kpi"><b>${s.mastered}<span style="font-size:1rem;color:var(--ink-2)"> / ${Object.keys(s.words).length}</span></b><span>Wörter sicher (zuletzt 2× richtig)</span></div>
-     <div class="kpi"><b style="${s.queue?"color:var(--red)":""}">${s.queue}</b><span>Wörter noch unsicher</span></div>
-     <div class="kpi"><b>${(Math.round(s.rt/100)/10).toLocaleString("de-CH")} s</b><span>Antwortzeit im Schnitt</span></div>
-   </div>
-   ${spark?`<div class="panel" style="margin-bottom:26px"><h3>Treffer pro Film</h3>${spark}</div>`:""}
-   <div class="grid2">
-     <div class="panel"><h3>Geübte Wörter (${practiced.length})</h3>
-       <div class="contact">${practiced.map(({w,x,st})=>`<div class="cell st-${st}"><span class="r"><b class="${st==="unsicher"?"grease":""}">${esc(w)}</b>${st==="sicher"?'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7.5 5.5 11 12 3" fill="none" stroke="#2F7A4C" stroke-width="2.4" stroke-linecap="round"/></svg>':""}</span><span>${x.ok}/${x.n} · ${st}</span></div>`).join("")}</div>
-       <div class="legend"><span><i class="grease" style="background:var(--pol)"></i>unsicher – wird wiederholt</span><span><i style="background:var(--pol)"></i>geübt</span><span><i style="background:var(--ok-bg)"></i>sicher ✓</span></div>
-     </div>
-     <div>
-       <div class="panel" style="margin-bottom:26px"><h3>Fehlerbild (${s.n-s.ok} Fehler)</h3>
-        ${typeArr.length?`<ul class="types">${typeArr.map(([t,c])=>`<li><span>${TYPE_INFO[t]?.t||t}</span><b class="num">${c}</b><span class="tb"><i style="width:${c/tmax*100}%"></i></span><small>${TYPE_INFO[t]?.h||""}</small></li>`).join("")}</ul>`:`<p class="muted">Keine Fehler – alles scharf.</p>`}
-       </div>
-       <div class="panel"><h3>Verwechslungen</h3>
-        ${errs.length?`<ul class="errs">${errs.map(a=>`<li><span class="pair"><b>${esc(a[1])}</b> gelesen als <s>${esc(a[3])}</s></span><span class="muted num">Stufe ${a[5]}</span></li>`).join("")}</ul>`:`<p class="muted">Keine.</p>`}
-       </div>
-     </div>
-   </div>`;
 }
 function dashSettings(){
   const S_=DB.settings, v=VOICE;
   const seg=(key,vals,lab)=>`<div class="seg">${vals.map(x=>`<button data-set="${key}" data-val="${x}" aria-pressed="${S_[key]===x}">${lab(x)}</button>`).join("")}</div>`;
   return `
+   <div class="next-kid">
+     <p><b>Kind fertig?</b> Zuerst auf der Startseite «Lernstand-Code» antippen und den Code im Lehrerzimmer scannen. Mit «Nächstes Kind» wird die Übung gelöscht und das nächste Kind beginnt neu.</p>
+     <button class="btn red" id="next-kid">Nächstes Kind</button>
+   </div>
    <div class="field"><span>Tempo-Regler</span>${seg("lock",[0,1,2,3,4,5],x=>x?"fest: Stufe "+x:"Kind wählt selbst")}<small>Fest eingestellt kann das Kind den Regler nicht verschieben.</small></div>
    <div class="field"><span>Fotos pro Film</span>${seg("filmLen",[8,12,16],x=>x+" Fotos")}<small>Falsch gelesene Wörter kommen im selben Film nochmals dazu.</small></div>
    <div class="field"><span>Welche Wörter?</span>${seg("range",[20,50,100],x=>"die "+x+" häufigsten")}<small>Für den Einstieg in der 1. Klasse eignen sich die 20 häufigsten.</small></div>
@@ -2630,7 +2588,7 @@ function dashSettings(){
 function wireDash(){
   const B=$("#dash-body");
   B.querySelectorAll("[data-set]").forEach(b=>b.onclick=()=>{ const k=b.dataset.set, raw=b.dataset.val; DB.settings[k]= raw==="true"?true: raw==="false"?false: +raw; if(k==="lock"&&+raw) S().level=+raw; save(); renderDash(); toast("Gespeichert."); });
-  const nk=$("#next-kid"); if(nk) nk.onclick=async()=>{ if(await dialog({title:"Nächstes Kind?",text:"Das Ergebnis wird gelöscht. Wenn du es behalten willst, drucke es vorher oder notiere es.",ok:"Löschen und neu beginnen",danger:true})){ DB.cur=newSession(); save(); renderStart(); toast("Bereit für das nächste Kind."); } };
+  const nk=$("#next-kid"); if(nk) nk.onclick=async()=>{ if(await dialog({title:"Nächstes Kind?",text:"Die Übung wird gelöscht. Wenn du den Lernstand behalten willst, scanne vorher den Lernstand-Code im Lehrerzimmer.",ok:"Löschen und neu beginnen",danger:true})){ DB.cur=newSession(); save(); renderStart(); toast("Bereit für das nächste Kind."); } };
   const pc=$("#pin-change"); if(pc) pc.onclick=()=>{ DB.settings.pin=null; save(); openPin(); };
 }
 
