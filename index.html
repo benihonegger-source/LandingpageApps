@@ -5,6 +5,7 @@
 <!-- Datenschutz: Diese Seite baut keine Verbindungen ins Internet auf. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
+<meta name="robots" content="noai, noimageai">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pausenplatz Lernspiele</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -307,6 +308,19 @@ a.feld.hopp{animation:hopp .38s cubic-bezier(.3,1.5,.5,1)}
 }
 .fuss h2{margin:0 0 var(--gap-xs);font-size:var(--text-sm);font-weight:var(--font-bold);letter-spacing:.08em;text-transform:uppercase;color:var(--tinte)}
 .fuss p{margin:0 0 var(--gap-xs)}
+.lp{
+  display:inline-grid;grid-template-columns:auto auto;align-items:center;column-gap:var(--gap-s);
+  min-height:44px;margin-bottom:var(--gap-s);padding:var(--gap-s) var(--gap);
+  border:2px solid var(--tinte);border-radius:12px 18px 10px 16px;
+  color:var(--tinte);text-decoration:none;background:var(--platz);
+  transition:background-color .15s, transform .1s;
+}
+.lp:hover{background:var(--platz-tief)}
+.lp:active{transform:translateY(2px)}
+.lp:focus-visible{outline:3px solid var(--rosa-tief);outline-offset:3px}
+.lp b{font-family:var(--font-display);font-weight:var(--font-black);font-size:var(--text-lg);line-height:var(--leading-heading)}
+.lp small{grid-column:1;font-size:var(--text-xs);color:var(--tinte-matt);line-height:var(--leading-heading)}
+.lp svg{grid-column:2;grid-row:1 / span 2;width:1.4em;height:1.4em}
 
 /* ---------- Breiter Bildschirm: Raster brechen ---------- */
 @media (min-width: 52rem){
@@ -392,10 +406,12 @@ a.feld.hopp{animation:hopp .38s cubic-bezier(.3,1.5,.5,1)}
   </nav>
 
   <footer class="fuss">
-    <h2>Für Lehrpersonen</h2>
-    <p>Die Spiele laufen direkt im Browser, ohne Anmeldung und ohne Installation. Mit dem Knopf «Pausenplatz» in jeder App kommen die Kinder wieder hierher.</p>
-    <p>Neue Spiele und neue Versionen kommen über die Datei <code>apps.js</code> und den Ordner <code>apps</code> auf die Seite.</p>
-    <p>Lernstand einlesen und drucken: im Lehrerzimmer. Dazu das Zahnrad oben rechts zwei Sekunden gedrückt halten.</p>
+    <a class="lp" href="richtlinien.html" target="_blank" rel="noopener">
+      <b>Für Lehrpersonen</b>
+      <small>Datenschutz, Stimme und Nutzung · öffnet ein neues Fenster</small>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <p>© 2026 Beni Honegger · Alle Rechte vorbehalten · Die Laut-Aufnahmen dürfen nicht ausserhalb der Spiele verwendet werden.</p>
   </footer>
 </main>
 
