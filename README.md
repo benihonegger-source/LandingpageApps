@@ -71,5 +71,11 @@ Lesezug: Die App speichert keine Namen. Die Kinder wählen ein Erkennungsbild (g
 Anlaute-App). Ergebnisse und Regler-Einstellungen bleiben im Browser des jeweiligen Geräts. Die Laute kommen aus
 den eigenen Aufnahmen, Anleitungen und Wörter liest die normale Stimme des Geräts vor (keine Premium-Stimme).
 
+Stärkenkreis: Die App speichert keine Namen. Die Kinder wählen ein Erkennungsbild (gleiche Nummern wie in Anlaute
+und Lesezug) und markieren, was sie gut können, in den Segmenten nach Gardners multiplen Intelligenzen. Eigene Sätze
+sind auf 50 Zeichen begrenzt, mit dem Hinweis, keine Namen zu schreiben. Die Stärkenkreise bleiben im Browser des
+jeweiligen Geräts und lassen sich unter «Für Erwachsene» (Zahnrad zwei Sekunden drücken) löschen. Vorgelesen wird
+mit der normalen Stimme des Geräts.
+
 Beim Einbauen einer neuen App darauf achten, dass sie keine Schriften oder Skripte von fremden
 Adressen lädt (z.B. `fonts.googleapis.com`).
