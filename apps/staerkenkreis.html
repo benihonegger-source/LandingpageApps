@@ -191,7 +191,7 @@ h1 .klein{display:block;font-size:.42em;letter-spacing:0;color:var(--tinte-matt)
 .chip .anz.null{background:#e9dcc6;color:var(--tinte-matt)}
 .tipp-text{margin:0;color:var(--tinte-matt);font-size:var(--text-sm)}
 
-/* ---------- Stück-Blatt (Stärken wählen) ---------- */
+/* ---------- Segment-Blatt (Stärken wählen) ---------- */
 .blatt-bg{
   position:fixed;inset:0;z-index:20;background:rgba(43,35,66,.45);display:flex;align-items:flex-end;justify-content:center;
   animation:ein .2s ease-out;
@@ -2161,16 +2161,16 @@ var qrcode = function () {
     <div class="wer" id="wer"></div>
   </div>
   <div class="pz">
-    <h1 class="pz-titel" id="pzTitel">Dein Stärkenkreis<small>Tippe auf ein Feld und sammle Sterne.</small></h1>
+    <h1 class="pz-titel" id="pzTitel">Dein Stärkenkreis<small>Tippe auf ein Segment und sammle Sterne.</small></h1>
     <div class="teller"><svg id="teller" viewBox="-22 -22 444 444" role="group" aria-label="Stärkenkreis"></svg></div>
     <div class="pz-unten">
-      <div class="leiste" id="leiste" role="list" aria-label="Alle Stücke"></div>
+      <div class="leiste" id="leiste" role="list" aria-label="Alle Segmente"></div>
       <p class="tipp-text" id="summe" aria-live="polite"></p>
     </div>
   </div>
 </main>
 
-<!-- ============ Stück-Blatt ============ -->
+<!-- ============ Segment-Blatt ============ -->
 <div class="blatt-bg" id="blattBg" hidden>
   <section class="blatt" id="blatt" role="dialog" aria-modal="true" aria-labelledby="blattT">
     <div class="blatt-kopf">
@@ -2208,13 +2208,13 @@ var qrcode = function () {
         <div class="stepper"><button type="button" id="kMinus" aria-label="Ein Kind weniger">−</button><output id="kZahl" aria-live="polite"></output><button type="button" id="kPlus" aria-label="Ein Kind mehr">+</button></div>
       </div>
       <div class="feld">
-        <div><b>Fragenklug-Feld zeigen</b><p>Gardners «halbe» Intelligenz (existenziell). Er selbst nennt sie nur eine Kandidatin. Darum ist es ein halbes Feld.</p></div>
-        <button class="schalter" id="fragenSchalter" type="button" role="switch" aria-checked="true" aria-label="Fragenklug-Feld zeigen"></button>
+        <div><b>Fragenklug-Segment zeigen</b><p>Gardners «halbe» Intelligenz (existenziell). Er selbst nennt sie nur eine Kandidatin. Darum ist es ein halbes Segment.</p></div>
+        <button class="schalter" id="fragenSchalter" type="button" role="switch" aria-checked="true" aria-label="Fragenklug-Segment zeigen"></button>
       </div>
       <div class="feld" style="display:block">
         <b>So lesen Sie den Stärkenkreis</b>
         <ul class="info">
-          <li>Grundlage: Howard Gardners multiple Intelligenzen. Jedes Kind hat alle Felder, der Kreis zeigt nur, wo es sich selbst gerade stark erlebt.</li>
+          <li>Grundlage: Howard Gardners multiple Intelligenzen. Jedes Kind hat alle Segmente, der Kreis zeigt nur, wo es sich selbst gerade stark erlebt.</li>
           <li>Selbsteinschätzung als Gesprächsanlass, keine Diagnose und kein «Lerntyp». Gardner rät ausdrücklich von Etiketten ab.</li>
           <li>Im Lehrerzimmer den Lernstand-Code scannen und das Blatt drucken. Den Namen dort von Hand eintragen.</li>
         </ul>
@@ -2241,7 +2241,7 @@ const kidNo = k => +String(k).slice(1);
 const kidWord = k => BILDER[kidNo(k) - 1][1];
 const kidLabel = k => `Nr. ${kidNo(k)} · ${kidWord(k)}`;
 
-/* ---------- Die Stücke (Gardner) ---------- */
+/* ---------- Die Segmente (Gardner) ---------- */
 const I = {
   wort:   '<path d="M4 5h16v10h-9l-4.5 4v-4H4z"/><path d="M8 9h8M8 12h5"/>',
   zahl:   '<path d="M7 5v6M4 8h6M14 8h6M4 17h6M14 15l6 4M20 15l-6 4"/>',
@@ -2359,7 +2359,7 @@ function winkel(liste){
   return liste.map(s => { const a0 = a; a += (s.halb ? .5 : 1) * w; return [a0, a]; });
 }
 const radius = n => R_MIN + (R_TEIG - R_MIN) * Math.min(n, MAXBELAG) / MAXBELAG;
-/* Stern-Plätze: feste Positionen im Feld, von innen nach aussen */
+/* Stern-Plätze: feste Positionen im Segment, von innen nach aussen */
 function belagPlatz(i, a0, a1){
   const f = [[.42,.5],[.6,.28],[.6,.72],[.8,.38],[.8,.66],[.92,.5],[.7,.5]][i % 7];
   return pt(R_MIN + (R_TEIG - R_MIN) * f[0], a0 + (a1 - a0) * f[1]);
@@ -2436,7 +2436,7 @@ function zeichneKreis(neu){
   }).join('');
   $('#leiste').querySelectorAll('.chip').forEach(b => b.onclick = () => oeffneStueck(b.dataset.id, b));
   const total = liste.reduce((n, s) => n + anzahl(aktKid, s.id), 0);
-  $('#summe').textContent = total ? `${total} ${total === 1 ? 'Stern' : 'Sterne'} in deinem Stärkenkreis.` : 'Noch keine Sterne. Such dir ein Feld aus!';
+  $('#summe').textContent = total ? `${total} ${total === 1 ? 'Stern' : 'Sterne'} in deinem Stärkenkreis.` : 'Noch keine Sterne. Such dir ein Segment aus!';
 }
 
 /* ---------- Seiten ---------- */
@@ -2457,11 +2457,11 @@ function zeigeKreis(k){
   $('#wer').innerHTML = `${picto(kidNo(k))}<span>${kidLabel(k)}</span>`;
   zeichneKreis();
   window.scrollTo(0, 0);
-  if(!hatDaten(k)) setTimeout(() => sprich('Das ist dein Stärkenkreis. Tippe auf ein Feld und sammle Sterne.'), 300);
+  if(!hatDaten(k)) setTimeout(() => sprich('Das ist dein Stärkenkreis. Tippe auf ein Segment und sammle Sterne.'), 300);
 }
 $('#andersKind').onclick = zeigeHome;
 
-/* ---------- Stück-Blatt ---------- */
+/* ---------- Segment-Blatt ---------- */
 let offenId = null, vorher = null;
 function oeffneStueck(id, von){
   const s = STUECKE.find(x => x.id === id); if(!s) return;
@@ -2488,7 +2488,7 @@ function zeichneSaetze(){
   h += eig.map((t, i) => `<li class="satz eigen"><button class="wahlknopf" type="button" aria-pressed="true" tabindex="-1" aria-disabled="true"><span class="kreis">${HAKEN}</span><span>${esc(t)}</span></button><button class="weg" type="button" data-weg="${i}" aria-label="Eigene Stärke «${esc(t)}» wegnehmen">${WEG}</button></li>`).join('');
   $('#saetze').innerHTML = h;
   const n = anzahl(aktKid, s.id);
-  $('#blattZahl').textContent = n ? `${n} ${n === 1 ? 'Stern' : 'Sterne'} in diesem Feld` : 'Noch kein Stern. Was passt zu dir?';
+  $('#blattZahl').textContent = n ? `${n} ${n === 1 ? 'Stern' : 'Sterne'} in diesem Segment` : 'Noch kein Stern. Was passt zu dir?';
   $('#saetze').querySelectorAll('[data-i]').forEach(b => b.onclick = () => waehle(+b.dataset.i, b));
   $('#saetze').querySelectorAll('[data-sag]').forEach(b => b.onclick = () => sprich(s.saetze[+b.dataset.sag], b));
   $('#saetze').querySelectorAll('[data-weg]').forEach(b => b.onclick = () => {
@@ -2519,7 +2519,7 @@ $('#eigenForm').addEventListener('submit', e => {
   const t = $('#eigenIn').value.replace(/\s+/g, ' ').trim();
   const m = $('#eigenMeldung');
   if(t.length < 3){ m.textContent = 'Schreib ein paar Wörter, zum Beispiel: Ich kann gut jonglieren.'; $('#eigenIn').focus(); return; }
-  if(eigene(aktKid, offenId).length >= 3){ m.textContent = 'In diesem Feld hat es schon drei eigene Sterne. Nimm einen weg, wenn du etwas ändern willst.'; return; }
+  if(eigene(aktKid, offenId).length >= 3){ m.textContent = 'In diesem Segment hat es schon drei eigene Sterne. Nimm einen weg, wenn du etwas ändern willst.'; return; }
   const d = kid(aktKid); (d.e[offenId] || (d.e[offenId] = [])).push(t.slice(0, 50)); d.t = Date.now(); save();
   $('#eigenIn').value = ''; m.textContent = 'Dein Stern ist im Kreis.';
   freude(e.submitter || $('#eigenIn'));
@@ -2604,7 +2604,7 @@ LernstandQR.init({
     const max = Math.max(...zahlen.map(x => x[1]));
     const top = zahlen.filter(x => x[1] === max && max > 0).map(x => x[0]);
     const b = [];
-    b.push({k:'kpi', i:[[String(total), 'Stärken gewählt'], [`${zahlen.filter(x => x[1]).length} von ${liste.length}`, 'Felder mit Sternen'], [top.map(s => s.name).join(', '), 'meiste Sterne']]});
+    b.push({k:'kpi', i:[[String(total), 'Stärken gewählt'], [`${zahlen.filter(x => x[1]).length} von ${liste.length}`, 'Segmente mit Sternen'], [top.map(s => s.name).join(', '), 'meiste Sterne']]});
     b.push({k:'bars', i: zahlen.map(([s, n]) => [s.name, Math.round(Math.min(n, MAXBELAG) / MAXBELAG * 100), n ? 'g' : 'n', String(n)])});
     zahlen.filter(x => x[1]).sort((a, c) => c[1] - a[1]).forEach(([s]) => {
       b.push({k:'h', x:`${s.name} · ${s.g}`});
