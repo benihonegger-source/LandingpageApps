@@ -47,5 +47,11 @@ window.APPS = [
     titel:  "Lesezug",
     uebt:   "Lesen lernen: hören, Laute, Silben, Wörter, Sätze, Blitzlesen",
     klasse: "1. und 2. Klasse"
+  },
+  {
+    datei:  "apps/staerkenkreis.html",
+    titel:  "Stärkenkreis",
+    uebt:   "Eigene Stärken entdecken (nach Gardner)",
+    klasse: "1. bis 6. Klasse"
   }
 ];
