@@ -36,11 +36,11 @@ mit dem aktuellen Lernstand (bei Anlaute und Lesezug: für das gewählte Erkennu
 
 Die Seite **Lernstand einlesen** (`lernstand.html`) liest die Codes ein und macht daraus druckbare Blätter
 (ganze A4-Seite oder halbe Seite zum Einkleben ins Lernheft). Mehrere Codes nacheinander scannen, dann alle zusammen drucken.
-Zugang: im Lehrerzimmer der Knopf **«Lernstand einlesen»** (geht auch ohne Anmeldung, Knopf auf der Anmeldeseite).
+Zugang: im Lehrpersonenzimmer der Knopf **«Lernstand einlesen»** (geht auch ohne Anmeldung, Knopf auf der Anmeldeseite).
 
 - Der Code enthält keinen Namen. Auf dem Blatt ist ein leeres Feld für den Namen von Hand.
 - Die Seite speichert nichts. Die Kamera wird nur auf dem Gerät ausgewertet, nichts geht ins Internet.
-  Sie ist bewusst getrennt vom Lehrerzimmer: Ihre Sicherheitsregel verbietet jede Verbindung, auch zum Lehrerzimmer-Server.
+  Sie ist bewusst getrennt vom Lehrpersonenzimmer: Ihre Sicherheitsregel verbietet jede Verbindung, auch zum Lehrpersonenzimmer-Server.
 - Die Kamera funktioniert nur über `https` (GitHub Pages). Ohne Kamera: «Foto des Codes wählen».
 - Tierbibliothek hat keinen Lernstand und darum keinen Code.
 
@@ -51,7 +51,7 @@ und einen Knopf mit `LernstandQR.open()` auf die Startseite setzen. Mögliche Bl
 `tab`, `grid`, `tiles`, `bars`, `spark`, `legend`, `cols` (Beispiele in den bestehenden Apps).
 Die Seite `lernstand.html` muss dafür nicht geändert werden.
 
-## Lehrerzimmer und Klassen-Boards
+## Lehrpersonenzimmer (eduapps.ch) und Klassen-Boards
 
 - `lehrerzimmer.html`: Plattform für Lehrpersonen (Zugang weiterhin über das Zahnrad auf dem Pausenplatz).
   App-Katalog mit Filtern (Klasse, Fachbereich, Dauer, LP21), Favoriten, Klassen-Boards als Wochenplan,
@@ -59,7 +59,7 @@ Die Seite `lernstand.html` muss dafür nicht geändert werden.
   Verwaltung (Einladungen, Lehrpersonen, Katalog, Meldungen).
 - `klasse.html#CODE`: das Board der Klasse für die Kinder. Kein Login. Das Gerät merkt sich nur den Board-Code.
   Die Seite fragt alle 20 Sekunden nach, ob sich das Board geändert hat (z. B. Fokus-Modus).
-- Server: Supabase-Projekt «Lehrerzimmer», Region Zürich (eu-central-2). Gespeichert werden nur
+- Server: Supabase-Projekt «Lehrerzimmer» (Name in Supabase), Region Zürich (eu-central-2). Gespeichert werden nur
   Pseudonyme der Lehrpersonen, Boards und der App-Katalog. Keine Daten von Kindern.
 - Konten: nur mit Einladungscode vom Admin. Keine E-Mail-Adresse; intern `pseudonym@lehrerzimmer.invalid`.
   Passwort vergessen: Admin setzt in der Verwaltung ein Einmal-Passwort.
