@@ -34,12 +34,13 @@ Sehen die Kinder noch die alte Version: Seite einmal neu laden.
 Jede Lern-App mit Lernstand hat auf der Startseite den Knopf **«Lernstand-Code»**. Er zeigt einen QR-Code
 mit dem aktuellen Lernstand (bei Anlaute und Lesezug: für das gewählte Erkennungsbild, umschaltbar).
 
-Das **Lehrerzimmer** (`lehrerzimmer.html`) liest die Codes ein und macht daraus druckbare Blätter
+Die Seite **Lernstand einlesen** (`lernstand.html`) liest die Codes ein und macht daraus druckbare Blätter
 (ganze A4-Seite oder halbe Seite zum Einkleben ins Lernheft). Mehrere Codes nacheinander scannen, dann alle zusammen drucken.
-Zugang: auf dem Pausenplatz das blasse **Zahnrad oben rechts zwei Sekunden gedrückt halten**.
+Zugang: im Lehrerzimmer der Knopf **«Lernstand einlesen»** (geht auch ohne Anmeldung, Knopf auf der Anmeldeseite).
 
 - Der Code enthält keinen Namen. Auf dem Blatt ist ein leeres Feld für den Namen von Hand.
-- Das Lehrerzimmer speichert nichts. Die Kamera wird nur auf dem Gerät ausgewertet, nichts geht ins Internet.
+- Die Seite speichert nichts. Die Kamera wird nur auf dem Gerät ausgewertet, nichts geht ins Internet.
+  Sie ist bewusst getrennt vom Lehrerzimmer: Ihre Sicherheitsregel verbietet jede Verbindung, auch zum Lehrerzimmer-Server.
 - Die Kamera funktioniert nur über `https` (GitHub Pages). Ohne Kamera: «Foto des Codes wählen».
 - Tierbibliothek hat keinen Lernstand und darum keinen Code.
 
@@ -48,7 +49,24 @@ aus einer bestehenden App in den `<head>` der neuen App kopieren. Dann in der Ap
 `LernstandQR.init({ app:'kennung', title:'Name', build(){ return { s:'Untertitel', b:[ …Blöcke… ] }; } })` aufrufen
 und einen Knopf mit `LernstandQR.open()` auf die Startseite setzen. Mögliche Blöcke: `kpi`, `h`, `p`, `list`, `chips`,
 `tab`, `grid`, `tiles`, `bars`, `spark`, `legend`, `cols` (Beispiele in den bestehenden Apps).
-Das Lehrerzimmer muss dafür nicht geändert werden.
+Die Seite `lernstand.html` muss dafür nicht geändert werden.
+
+## Lehrerzimmer und Klassen-Boards
+
+- `lehrerzimmer.html`: Plattform für Lehrpersonen (Zugang weiterhin über das Zahnrad auf dem Pausenplatz).
+  App-Katalog mit Filtern (Klasse, Fachbereich, Dauer, LP21), Favoriten, Klassen-Boards als Wochenplan,
+  Fokus-Modus, QR-Code und Link pro Board, Duplizieren, gemeinsames Bearbeiten, Rückmeldungen,
+  Verwaltung (Einladungen, Lehrpersonen, Katalog, Meldungen).
+- `klasse.html#CODE`: das Board der Klasse für die Kinder. Kein Login. Das Gerät merkt sich nur den Board-Code.
+  Die Seite fragt alle 20 Sekunden nach, ob sich das Board geändert hat (z. B. Fokus-Modus).
+- Server: Supabase-Projekt «Lehrerzimmer», Region Zürich (eu-central-2). Gespeichert werden nur
+  Pseudonyme der Lehrpersonen, Boards und der App-Katalog. Keine Daten von Kindern.
+- Konten: nur mit Einladungscode vom Admin. Keine E-Mail-Adresse; intern `pseudonym@lehrerzimmer.invalid`.
+  Passwort vergessen: Admin setzt in der Verwaltung ein Einmal-Passwort.
+- Neue App in den Katalog: in der Verwaltung → App-Katalog eintragen (eigene App: Pfad `apps/…html`).
+  Der Pausenplatz selbst liest weiterhin `apps.js`.
+- `.github/workflows/lehrerzimmer-wach-halten.yml` fragt einmal pro Tag den Katalog ab, damit Supabase
+  das Gratis-Projekt nicht pausiert.
 
 ## Datenschutz
 

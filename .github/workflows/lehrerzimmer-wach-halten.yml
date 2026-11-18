@@ -1,0 +1,25 @@
+# Hält den Lehrerzimmer-Server (Supabase, Gratis-Plan) wach.
+# Supabase pausiert Gratis-Projekte nach einer Woche mit zu wenig Aktivität.
+# Diese Aufgabe fragt einmal pro Tag den App-Katalog ab. Es werden keine Daten
+# gesendet oder gespeichert; verwendet wird nur der öffentliche Schlüssel,
+# der ohnehin in klasse.html und lehrerzimmer.html steht.
+# Hinweis: GitHub stoppt geplante Aufgaben, wenn im Repo 60 Tage lang nichts
+# geändert wurde. Dann unter «Actions» einmal «Enable workflow» klicken.
+name: Lehrerzimmer wach halten
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  wecken:
+    runs-on: ubuntu-latest
+    steps:
+      - name: App-Katalog einmal abfragen
+        run: |
+          curl --fail --silent --show-error --max-time 30 \
+            "https://mfcjwjvdggqvmumamxpk.supabase.co/rest/v1/app?select=slug&limit=1" \
+            -H "apikey: sb_publishable_e9CLiMC8cUg5JzDo5ZdXog_WGIGBdKN"
