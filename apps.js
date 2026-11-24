@@ -14,7 +14,7 @@
 window.APPS = [
   {
     datei:  "apps/rechentrainer-1.html",
-    titel:  "Rechentrainer",
+    titel:  "Rechentrainer 1",
     uebt:   "Plus und Minus bis 20 mit dem 20er-Feld",
     klasse: "1. Klasse"
   },
