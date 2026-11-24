@@ -53,5 +53,11 @@ window.APPS = [
     titel:  "Stärkenkreis",
     uebt:   "Eigene Stärken entdecken (nach Gardner)",
     klasse: "1. bis 6. Klasse"
+  },
+  {
+    datei:  "apps/geld-laden.html",
+    titel:  "Geld-Laden",
+    uebt:   "Rechnen mit Franken und Rappen, Rückgeld geben",
+    klasse: "1. und 2. Klasse"
   }
 ];
