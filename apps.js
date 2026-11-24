@@ -19,6 +19,12 @@ window.APPS = [
     klasse: "1. Klasse"
   },
   {
+    datei:  "apps/rechentrainer-2.html",
+    titel:  "Rechentrainer 2",
+    uebt:   "Plus und Minus bis 100: zuerst die Zehner, dann die Einer",
+    klasse: "2. Klasse"
+  },
+  {
     datei:  "apps/anlaute.html",
     titel:  "Anlaute",
     uebt:   "Anlaute hören, Buchstaben finden, der, die, das",
