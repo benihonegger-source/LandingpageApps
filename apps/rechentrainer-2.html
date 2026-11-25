@@ -353,7 +353,7 @@ p{margin:0}
 .waylbl.p i{background:var(--blue);box-shadow:inset 0 -3px 0 var(--blue-deep)}
 .waylbl.m i{background:var(--red);box-shadow:inset 0 -3px 0 var(--red-deep)}
 .cards.way5{grid-template-columns:repeat(auto-fill,minmax(min(100%,10rem),1fr));padding-top:0}
-@media (min-width:1000px){.cards.way5{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media (min-width:1000px){.cards.way5{grid-template-columns:repeat(6,minmax(0,1fr))}.cards.way5 .card{padding-inline:var(--s3)}.cards.way5 .tt{font-size:var(--text-base)}}
 @media (max-width:640px){.wayrow{grid-template-columns:minmax(0,1fr)}.waylbl{flex-direction:row;width:auto}}
 .card .ex{font-family:var(--font-display);font-weight:var(--font-bold);font-size:var(--text-sm);color:var(--ink-soft);font-variant-numeric:tabular-nums}
 
@@ -397,6 +397,30 @@ p{margin:0}
   .split .hidecard{min-height:12rem}
 }
 @media (max-width:560px){.formula.two{font-size:var(--text-3xl)}.formula.two .slot{font-size:var(--text-4xl)}}
+
+/* Zahlenstrahl: Sprung bis zum Zehner, dann weiter */
+.zstrahl{width:100%;max-width:40rem;padding:var(--s2);background:var(--paper-hi);border-radius:12px;box-shadow:inset 0 0 0 2px var(--line)}
+.zstrahl svg{display:block;width:100%;height:auto;overflow:visible}
+.zs-axis{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.zs-tick{stroke:var(--ink-soft);stroke-width:2;stroke-linecap:round}
+.zs-tick.big{stroke:var(--ink);stroke-width:3.5}
+.zs-ten{font-family:var(--font-display);font-weight:var(--font-bold);font-size:34px;fill:var(--ink);text-anchor:middle}
+.zs-z{fill:var(--mark);stroke:var(--mark-ink);stroke-width:2}
+.zs-arc{fill:none;stroke-width:5;stroke-linecap:round}
+.zs-arc.zp{stroke:var(--blue)} .zs-arc.zp.k2{stroke:var(--blue-deep)}
+.zs-arc.zm{stroke:var(--red)} .zs-arc.zm.k2{stroke:var(--red-deep)}
+.zs-pill.zp{fill:var(--blue)} .zs-pill.zp.k2{fill:var(--blue-deep)}
+.zs-pill.zm{fill:var(--red)} .zs-pill.zm.k2{fill:var(--red-deep)}
+.zs-plbl{font-family:var(--font-display);font-weight:var(--font-bold);font-size:28px;fill:var(--paper-hi);text-anchor:middle}
+.zs-start{fill:var(--ink)}
+.zs-end{fill:var(--paper-hi);stroke:var(--ink-faint);stroke-width:2.5;stroke-dasharray:3 3}
+.zs-end.on{fill:var(--ok);stroke:var(--ok-deep);stroke-dasharray:none}
+.zs-num{font-family:var(--font-display);font-weight:var(--font-bold);font-size:32px;text-anchor:middle}
+.zs-num.st{fill:var(--ink)}
+.zs-num.en{fill:var(--ink-faint)} .zs-num.en.on{fill:var(--ok)}
+.m-ab{fill:none;stroke:var(--blue);stroke-width:1.8;stroke-linecap:round}
+.m-ar{fill:none;stroke:var(--red);stroke-width:1.8;stroke-linecap:round}
+.zs-lead{stroke:var(--ink-faint);stroke-width:1.5;stroke-dasharray:2 3}
 </style>
 <!-- LERNSTAND-QR: Anfang (Baustein für alle Lern-Apps, gleich in jeder App) -->
 <script>
@@ -2229,12 +2253,13 @@ var qrcode = function () {
    Der Lernstand lebt nur im Arbeitsspeicher; für die Lehrperson gibt es den Lernstand-Code.
 
    Aufbau: 5 Grundlagen (Zahlbild, Zählen in Schritten, Ergänzen, Verdoppeln, Halbieren)
-   und der Rechenweg in 5 Schritten, gleich für Plus und Minus:
+   und der Rechenweg in 6 Schritten, gleich für Plus und Minus:
      1  Z ± Z           30 + 40    70 − 40
      2  ZE ± Z          34 + 20    54 − 20
-     3  ZE ± E          34 + 5     37 − 5     (Stufe 2 und 3: über den Zehner)
-     4  ZE ± ZE ohne    22 + 33    58 − 23    (zuerst die Zehner, dann die Einer)
-     5  ZE ± ZE mit     45 + 37    82 − 37    (45 + 30 = 75, 75 + 7 = 82)
+     3  ZE ± E          34 + 5     37 − 5     (nicht über den Zehner)
+     4  über den Zehner 34 + 9     32 − 8     (Zahlenstrahl: 34 + 6 = 40, 40 + 3 = 43)
+     5  ZE ± ZE ohne    22 + 33    58 − 23    (zuerst die Zehner, dann die Einer)
+     6  ZE ± ZE mit     45 + 37    82 − 37    (45 + 30 = 75, 75 + 7 = 82)
    ========================================================= */
 
 const $app = document.getElementById('app');
@@ -2249,13 +2274,15 @@ const MODULES = [
   {id:6,  grp:'p', step:1, title:'Zehner plus Zehner', ex:'30 + 40'},
   {id:7,  grp:'p', step:2, title:'Zehner dazu',        ex:'34 + 20'},
   {id:8,  grp:'p', step:3, title:'Einer dazu',         ex:'34 + 5'},
-  {id:9,  grp:'p', step:4, title:'Plus ohne Übergang', ex:'22 + 33'},
-  {id:10, grp:'p', step:5, title:'Plus mit Übergang',  ex:'45 + 37'},
+  {id:16, grp:'p', step:4, title:'Über den Zehner',    ex:'34 + 9'},
+  {id:9,  grp:'p', step:5, title:'Plus ohne Übergang', ex:'22 + 33'},
+  {id:10, grp:'p', step:6, title:'Plus mit Übergang',  ex:'45 + 37'},
   {id:11, grp:'m', step:1, title:'Zehner minus Zehner',ex:'70 − 40'},
   {id:12, grp:'m', step:2, title:'Zehner weg',         ex:'54 − 20'},
   {id:13, grp:'m', step:3, title:'Einer weg',          ex:'37 − 5'},
-  {id:14, grp:'m', step:4, title:'Minus ohne Übergang',ex:'58 − 23'},
-  {id:15, grp:'m', step:5, title:'Minus mit Übergang', ex:'82 − 37'}
+  {id:17, grp:'m', step:4, title:'Über den Zehner',    ex:'32 − 8'},
+  {id:14, grp:'m', step:5, title:'Minus ohne Übergang',ex:'58 − 23'},
+  {id:15, grp:'m', step:6, title:'Minus mit Übergang', ex:'82 − 37'}
 ];
 const MOD = id => MODULES.find(m => m.id === id);
 const label = m => m.grp==='g' ? `Übung ${m.id}` : `${m.grp==='p'?'Plus':'Minus'} · Schritt ${m.step}`;
@@ -2268,12 +2295,14 @@ const LDESC = {
   5:['Gerade Zehnerzahlen','Alle Zehnerzahlen','Gerade Zahlen bis 100 – im Kopf'],
   6:['Bis 50, mit kleiner Aufgabe','Bis 100','Im Kopf, auch mit Lücke'],
   7:['Bis 60','Bis 100','Im Kopf, auch getauscht'],
-  8:['Nicht über den Zehner','Über den Zehner','Über den Zehner – im Kopf'],
+  8:['Bis 50, mit kleiner Aufgabe','Bis 100, auch bis zum Zehner','Im Kopf'],
   9:['In zwei Schritten','Bis 100, mit Bild','Im Kopf'],
   10:['In zwei Schritten, mit Bild','In zwei Schritten, ohne Bild','Im Kopf'],
   11:['Bis 50, mit kleiner Aufgabe','Bis 100','Im Kopf, auch mit Lücke'],
   12:['Bis 60','Bis 100','Im Kopf, auch mit Lücke'],
-  13:['Nicht über den Zehner','Über den Zehner','Über den Zehner – im Kopf'],
+  13:['Bis 50, mit kleiner Aufgabe','Bis 100, auch bis zum Zehner','Im Kopf'],
+  16:['Zahlenstrahl, in zwei Sprüngen','Zahlenstrahl, ein Ergebnis','Im Kopf'],
+  17:['Zahlenstrahl, in zwei Sprüngen','Zahlenstrahl, ein Ergebnis','Im Kopf'],
   14:['In zwei Schritten','Bis 100, mit Bild','Im Kopf'],
   15:['In zwei Schritten, mit Bild','In zwei Schritten, ohne Bild','Im Kopf']
 };
@@ -2338,6 +2367,14 @@ const MINI = {
   15:['rrrrrrrxxx','xxxxxxxxxx','xx']
 };
 function miniV(id){
+  if(id===16 || id===17){
+    const p=id===16, X=n=>8+n*5.2; let t='<line class="m-l" x1="4" y1="34" x2="116" y2="34"/>';
+    for(let n=0;n<=20;n++) t+=`<line class="m-l" style="stroke-width:${n%10?1:1.8}" x1="${X(n)}" y1="${n%10?31:28}" x2="${X(n)}" y2="${n%10?37:40}"/>`;
+    const a=p?4:12, z=10, e=p?13:4, cl=p?'m-ab':'m-ar';
+    t+=`<path class="${cl}" d="M${X(a)} 31Q${(X(a)+X(z))/2} 8 ${X(z)} 31"/><path class="${cl}" d="M${X(z)} 31Q${(X(z)+X(e))/2} 12 ${X(e)} 31"/>`;
+    t+=`<circle class="m-${p?'r':'r'}" cx="${X(a)}" cy="34" r="3.4"/><circle class="m-b" cx="${X(e)}" cy="34" r="3.4"/><circle style="fill:var(--mark)" cx="${X(z)}" cy="34" r="3.4"/>`;
+    return `<svg class="mini" viewBox="0 0 120 44" aria-hidden="true" focusable="false">${t}</svg>`;
+  }
   const X = c => 7 + c*10.6 + (c>=5?4:0), Y = r => 9 + r*13, R0 = 4.6;
   let s = '';
   for(let r=0;r<3;r++) for(let c=0;c<10;c++) s += `<circle class="m-h" cx="${X(c)}" cy="${Y(r)}" r="${R0}"/>`;
@@ -2446,7 +2483,20 @@ function einerHint(a, op, e){
   return `Über den Zehner: erst ${a} − ${E(a)} = ${a-E(a)}. Dann noch ${e-E(a)} weg.`;
 }
 
-/* ---------------- Aufgaben: 15 Übungen × 3 Stufen ---------------- */
+// Über den Zehner: zuerst bis zum vollen Zehner springen, dann den Rest. Bild: Zahlenstrahl.
+function ueberTask(a, op, b, L){
+  const plus = op==='+', z = plus ? 10*(Z(a)+1) : 10*Z(a);
+  const j1 = plus ? z-a : a-z, j2 = b-j1, res = plus ? a+b : a-b;
+  const line = {a, op, z, res, j:[j1,j2], lo:z-10, hi:z+10, lbl1:L>1};
+  const hint = plus ? `Erst bis ${z}: ${a} + ${j1} = ${z}. Dann noch ${j2} dazu.` : `Erst bis ${z}: ${a} − ${j1} = ${z}. Dann noch ${j2} weg.`;
+  if(L===1) return T('Spring zuerst bis zum Zehner, dann weiter.',[a,op,b,'=',FL(1)],[j1,res],null,{line,
+      steps:[[a,op,SL(0),'=',z],[z,op,j2,'=',SL(1)]],
+      hints:[`Wie weit ist es von ${a} bis ${z}? Zähle die kleinen Striche.`, plus?`${z} + ${j2}: der Zehner bleibt, nur noch die Einer.`:`${z} − ${j2}: vom vollen Zehner zurück.`]});
+  if(L===2) return T('Über den Zehner! Der Zahlenstrahl hilft.',[a,op,b,'=',S],res,null,{line,hint});
+  return T('Über den Zehner im Kopf!',[a,op,b,'=',S],res,null,{line,hidden:true,hint});
+}
+
+/* ---------------- Aufgaben: 17 Übungen × 3 Stufen ---------------- */
 function gen(m, L){
   switch(m){
     case 1: { // Wie viele? Zahlbild am Hunderterfeld
@@ -2522,8 +2572,8 @@ function gen(m, L){
     case 8: { // ZE + E
       let a,b;
       if(L===1){ do{ a=ZE(11,49); b=R(1,10-E(a)); }while(a+b>100); return T('Einer dazu.',[a,'+',b,'=',S],a+b,fSeq(a,b),{ref:[E(a),'+',b,'=',E(a)+b],refLbl:'Kleine Aufgabe',hint:einerHint(a,'+',b)}); }
-      do{ a=ZE(12,95); b=R(2,9); }while(E(a)+b<=10 || a+b>100);
-      return T(L===2?'Einer dazu – über den Zehner.':'Über den Zehner im Kopf!',[a,'+',b,'=',S],a+b,fSeq(a,b),{hidden:L===3,hint:einerHint(a,'+',b)});
+      do{ a=ZE(11,99); b=R(1,9); }while(E(a)+b>10 || a+b>100);
+      return T(L===2?'Einer dazu.':'Einer dazu im Kopf!',[a,'+',b,'=',S],a+b,fSeq(a,b),{hidden:L===3,hint:einerHint(a,'+',b)});
     }
     case 9: { // ZE + ZE ohne Übergang
       let a,b; const hi = L===1 ? 69 : 99;
@@ -2559,8 +2609,8 @@ function gen(m, L){
     case 13: { // ZE − E
       let a,b;
       if(L===1){ a=ZE(11,49); b=R(1,E(a)); return T('Einer weg.',[a,'−',b,'=',S],a-b,fSeq(a,0,b),{ref:[E(a),'−',b,'=',E(a)-b],refLbl:'Kleine Aufgabe',hint:einerHint(a,'−',b)}); }
-      do{ a=ZE(21,98); b=R(2,9); }while(b<=E(a));
-      return T(L===2?'Einer weg – über den Zehner.':'Über den Zehner im Kopf!',[a,'−',b,'=',S],a-b,fSeq(a,0,b),{hidden:L===3,hint:einerHint(a,'−',b)});
+      do{ a=ZE(11,99); b=R(1,9); }while(b>E(a));
+      return T(L===2?'Einer weg.':'Einer weg im Kopf!',[a,'−',b,'=',S],a-b,fSeq(a,0,b),{hidden:L===3,hint:einerHint(a,'−',b)});
     }
     case 14: { // ZE − ZE ohne Übergang
       let a,b; const hi = L===1 ? 69 : 99;
@@ -2568,6 +2618,14 @@ function gen(m, L){
       if(L===1) return stepTask('Zuerst die Zehner, dann die Einer.',a,'−',b,fSeq(a,0,b));
       const hint=`Zuerst die Zehner: ${a} − ${Z(b)*10} = ${a-Z(b)*10}. Dann noch ${E(b)} weg.`;
       return T(L===2?'Minus ohne Übergang.':'Minus im Kopf!',[a,'−',b,'=',S],a-b,fSeq(a,0,b),{hidden:L===3,hint});
+    }
+    case 16: { // ZE + E über den Zehner, Zahlenstrahl
+      let a,b; do{ a=ZE(11,98); b=R(2,9); }while(E(a)+b<=10 || a+b>100);
+      return ueberTask(a,'+',b,L);
+    }
+    case 17: { // ZE − E über den Zehner, Zahlenstrahl
+      let a,b; do{ a=ZE(11,99); b=R(2,9); }while(b<=E(a) || a-b<1);
+      return ueberTask(a,'−',b,L);
     }
     default: { // ZE − ZE mit Übergang
       let a,b;
@@ -2707,6 +2765,42 @@ function frameV(cells, small){
   }
   return `<div class="frame h100${small?' small':''}"><div class="fgrid h100">${h}</div></div>`;
 }
+// Zahlenstrahl: ein Ausschnitt von 20 Zahlen um den Zehner, zwei Sprungbögen
+function lineV(l0){
+  // Auf dem Handy nur der Ausschnitt um die Sprünge, damit Zahlen und Striche gross bleiben
+  const l = Object.assign({}, l0);
+  if(window.innerWidth < 600){
+    let lo=Math.min(l.a,l.res)-2, hi=Math.max(l.a,l.res)+2;
+    while(hi-lo<9){ lo--; if(hi-lo<9) hi++; }
+    l.lo=lo; l.hi=hi;
+  }
+  const r=st.round, W=640, x0=30, x1=W-30, u=(x1-x0)/(l.hi-l.lo), X=n=>x0+(n-l.lo)*u, y=150;
+  const cls = l.op==='+' ? 'zp' : 'zm';
+  let s=`<line class="zs-axis" x1="${x0-14}" y1="${y}" x2="${x1+14}" y2="${y}"/>`;
+  for(let n=l.lo;n<=l.hi;n++){
+    const big=n%10===0, mid=n%5===0, h=big?20:mid?13:8;
+    s+=`<line class="zs-tick${big?' big':''}" x1="${X(n)}" y1="${y-h}" x2="${X(n)}" y2="${y+h}"/>`;
+    if(big) s+=`<text class="zs-ten" x="${X(n)}" y="${y+54}">${n}</text>`;
+  }
+  // der Zehner, über den man springt, ist markiert
+  s+=`<circle class="zs-z" cx="${X(l.z)}" cy="${y}" r="11"/>`;
+  const known0 = l.lbl1 || r.vals[0]!==undefined || r.phase==='correct' || r.phase==='reveal';
+  const done = r.vals[r.cur.answers.length-1]!==undefined;
+  // liegen die beiden Schilder zu nah beieinander, springt der zweite Bogen höher
+  const lift = Math.abs((X(l.a)-X(l.res))/2) < 84 ? 48 : 0;
+  const arc=(from,to,lbl,k)=>{
+    const xa=X(from), xb=X(to), mx=(xa+xb)/2, hgt=Math.min(70, 30+Math.abs(xb-xa)*.3)+(k?lift:0);
+    const tw = Math.max(64, String(lbl).length*20+26);
+    return `<path class="zs-arc ${cls}${k?' k2':''}" d="M${xa} ${y-4} Q${mx} ${y-hgt*2+4} ${xb} ${y-4}"/>
+      <rect class="zs-pill ${cls}${k?' k2':''}" x="${mx-tw/2}" y="${y-hgt-20}" width="${tw}" height="40" rx="20"/>
+      <text class="zs-plbl" x="${mx}" y="${y-hgt+10}">${lbl}</text>`;
+  };
+  s+=arc(l.a, l.z, `${l.op} ${known0 ? l.j[0] : '?'}`, 0);
+  s+=arc(l.z, l.res, `${l.op} ${l.j[1]}`, 1);
+  s+=`<circle class="zs-start" cx="${X(l.a)}" cy="${y}" r="9"/><line class="zs-lead" x1="${X(l.a)}" y1="${y+12}" x2="${X(l.a)}" y2="${y+68}"/><text class="zs-num st" x="${X(l.a)}" y="${y+100}">${l.a}</text>`;
+  s+=`<circle class="zs-end${done?' on':''}" cx="${X(l.res)}" cy="${y}" r="9"/><line class="zs-lead" x1="${X(l.res)}" y1="${y+12}" x2="${X(l.res)}" y2="${y+68}"/><text class="zs-num en${done?' on':''}" x="${X(l.res)}" y="${y+100}">${done?l.res:'?'}</text>`;
+  return `<div class="zstrahl"><svg viewBox="0 0 ${W} 262" role="img" aria-label="Zahlenstrahl von ${l.lo} bis ${l.hi}">${s}</svg></div>`;
+}
 function slotCls(){ const r=st.round; if(r.phase==='correct') return 'ok'; if(r.phase==='reveal'||r.phase==='stepReveal') return 'rev'; if(r.shake) return 'bad'; return r.input===''?'empty':''; }
 function slotTxt(){ return st.round.input==='' ? '?' : st.round.input; }
 function tokV(p){
@@ -2743,13 +2837,13 @@ function playV(){
   const r=st.round, t=r.cur, m=MOD(st.m);
   const dots = r.results.map((v,i)=>`<i class="dot ${v||''} ${(!t.retry && t.oi===i)?'cur':''}"></i>`).join('');
   let pic='';
-  if(t.cells){
+  if(t.cells || t.line){
     if(r.frameHidden){
       pic = st.mode==='blitz'
         ? `<div class="hidecard">${ic('eyeoff','big')}Was hast du gesehen?<button class="btn smallbtn" data-a="peek">${ic('eye')}Nochmal zeigen</button></div>`
         : `<div class="hidecard">${foxV()}Rechne im Kopf!<button class="btn smallbtn" data-a="help">${ic('bulb')}Hilfe: Bild zeigen</button></div>`;
     } else {
-      pic = frameV(t.cells, !!t.steps);
+      pic = t.line ? lineV(t.line) : frameV(t.cells, !!t.steps);
       const left = r.blitzEnd - Date.now();
       if(st.mode==='blitz' && left>0) pic += `<div class="timebar"><i style="animation-duration:${r.blitzMs}ms;animation-delay:-${r.blitzMs-left}ms"></i></div>`;
     }
@@ -2770,10 +2864,10 @@ function playV(){
         ${t.retry?`<span class="badge">${ic('retry')}Nochmal</span>`:''}
       </div>
       ${t.ref?`<div class="ref">${t.refLbl?`<small>${t.refLbl}</small>`:''}${t.ref.join(' ')}</div>`:''}
-      ${t.steps ? `<div class="split">${pic?`<div class="sp-pic">${pic}</div>`:''}<div class="sp-calc">
+      ${t.steps && !t.line ? `<div class="split">${pic?`<div class="sp-pic">${pic}</div>`:''}<div class="sp-calc">
         <div class="${fcls}">${t.parts.map(tokV).join('')}</div>
         <div class="rweg"><small>Rechenweg</small>${t.steps.map(line=>`<div class="formula step-f">${line.map(tokV).join('')}</div>`).join('')}</div>
-      </div></div>` : `${pic}<div class="${fcls}">${t.parts.map(tokV).join('')}</div>`}
+      </div></div>` : `${pic}<div class="${fcls}">${t.parts.map(tokV).join('')}</div>${t.steps?`<div class="rweg"><small>In zwei Sprüngen</small>${t.steps.map(line=>`<div class="formula step-f">${line.map(tokV).join('')}</div>`).join('')}</div>`:''}`}
       ${r.msg?`<div class="mascot">${foxV(r.mood)}<div class="bubble">${r.msg}</div></div>`:''}
     </section>
     <section class="padarea">${padV()}</section>
@@ -2784,7 +2878,7 @@ function endV(){
   const r=st.round, s=r.score, n = s>=9?3 : s>=7?2 : s>=4?1 : 0;
   const msg = s>=9?'Wow, super gemacht!' : s>=7?'Sehr gut!' : s>=4?'Gut geübt! Weiter so.' : 'Das war schwierig. Übe nochmal in Ruhe.';
   const up = s>=8 && st.L<3, down = s<=4 && st.L>1;
-  const m = MOD(st.m), nextMod = st.L===3 && s>=8 && m.grp!=='g' && m.step<5 ? MODULES.find(x=>x.grp===m.grp && x.step===m.step+1) : null;
+  const m = MOD(st.m), nextMod = st.L===3 && s>=8 && m.grp!=='g' && m.step<6 ? MODULES.find(x=>x.grp===m.grp && x.step===m.step+1) : null;
   return `
   <div class="end">
     ${foxV('hop')}
@@ -2815,7 +2909,8 @@ function modalV(){
     <div class="overlay"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mh">
       <h3 id="mh">Für Eltern und Lehrpersonen</h3>
       <ul>
-        <li><b>Der Rechenweg in 5 Schritten,</b> für Plus und Minus gleich: 1. Zehner ± Zehner (30 + 40), 2. Zehner dazu/weg (34 + 20), 3. Einer dazu/weg, ab Stufe Mittel über den Zehner (37 + 5), 4. ohne Zehnerübergang (22 + 33), 5. mit Zehnerübergang (45 + 37). Ab Schritt 4 wird in zwei Schritten gerechnet: zuerst die Zehner, dann die Einer (45 + 30 = 75, 75 + 7 = 82).</li>
+        <li><b>Der Rechenweg in 6 Schritten,</b> für Plus und Minus gleich: 1. Zehner ± Zehner (30 + 40), 2. Zehner dazu/weg (34 + 20), 3. Einer dazu/weg, nicht über den Zehner (34 + 5), 4. Einer über den Zehner (34 + 9, 32 − 8), 5. ohne Zehnerübergang (22 + 33), 6. mit Zehnerübergang (45 + 37). Ab Schritt 5 wird in zwei Schritten gerechnet: zuerst die Zehner, dann die Einer (45 + 30 = 75, 75 + 7 = 82).</li>
+        <li><b>Über den Zehner</b> zeigt einen Zahlenstrahl: zuerst ein Sprung bis zum vollen Zehner, dann der Rest (34 + 6 = 40, 40 + 3 = 43). Leicht: in zwei Sprüngen, das Kind findet den ersten Sprung selbst. Mittel: Zahlenstrahl mit beiden Sprüngen, ein Ergebnis. Schwer: im Kopf, Zahlenstrahl auf Wunsch.</li>
         <li><b>Grundlagen</b> nach dem Blitzrechnen im Schweizer Zahlenbuch 2 und den Grundansprüchen des Lehrplans 21: Zehner und Einer am Hunderterfeld, Zählen in 2er-, 5er- und 10er-Schritten, Ergänzen zum Zehner und bis 100, Verdoppeln (10er- und 5er-Zahlen), Halbieren (10er-Zahlen).</li>
         <li><b>3 Stufen pro Übung,</b> erkennbar an 1, 2 oder 3 roten Punkten. Leicht: Hunderterfeld und oft eine «kleine Aufgabe» (3 + 4 = 7 hilft bei 30 + 40). Mittel: grösserer Zahlenraum, weniger Hilfen. Schwer: im Kopf; das Bild erscheint nur auf Wunsch («Hilfe»).</li>
         <li><b>Eine Runde hat 10 Aufgaben.</b> Nach einem Fehler gibt es einen Tipp, nach dem zweiten die Lösung. Die Aufgabe kommt später in der Runde nochmals.</li>
@@ -2847,7 +2942,7 @@ function beginTask(){
   r.cur=r.list[r.pos]; r.input=''; r.tries=0; r.triesK=0; r.k=0; r.vals=[]; r.revealed=false;
   r.help=false; r.phase='ask'; r.msg=''; r.mood=''; r.shake=false;
   r.frameHidden = st.mode==='practice' && r.cur.hidden; r.blitzEnd=0;
-  if(st.mode==='blitz' && r.cur.cells) startBlitz();
+  if(st.mode==='blitz' && (r.cur.cells || r.cur.line)) startBlitz();
   render();
 }
 function startBlitz(){
@@ -2992,6 +3087,8 @@ document.addEventListener('keydown', e => {
   else if(e.key==='Backspace'){ e.preventDefault(); delDigit(); }
   else if(e.key==='Enter'){ e.preventDefault(); const ph=st.round && st.round.phase; if(ph==='reveal'||ph==='stepReveal') act.next(); else submit(); }
 });
+let narrow = window.innerWidth < 600;   // Zahlenstrahl neu zeichnen, wenn das Gerät gedreht wird
+window.addEventListener('resize', () => { const n = window.innerWidth < 600; if(n!==narrow){ narrow=n; if(st.screen==='play' && st.round && st.round.cur.line) render(); } });
 window.addEventListener('beforeunload', e => { if(st.dirty){ e.preventDefault(); e.returnValue=''; } });
 
 /* ---------------- Lernstand-Code fürs Lehrerzimmer ---------------- */
@@ -3017,12 +3114,12 @@ LernstandQR.init({
     if(mastered.length) lines.push(`Alle Stufen geschafft: ${mastered.join(', ')}`);
     if(notStarted.length) lines.push(`Noch nicht begonnen: ${notStarted.join(', ')}`);
     return { s:'Zahlenraum bis 100', b:[
-      {k:'kpi', i:[[String(st.stars),'Sterne gesammelt'],[`${doneLv} von 45`,'Stufen geschafft'],[totT?`${Math.round(totC/totT*100)} %`:'–','beim 1. Versuch richtig']]},
+      {k:'kpi', i:[[String(st.stars),'Sterne gesammelt'],[`${doneLv} von ${MODULES.length*3}`,'Stufen geschafft'],[totT?`${Math.round(totC/totT*100)} %`:'–','beim 1. Versuch richtig']]},
       {k:'tab', h:['Übung','Leicht','Mittel','Schwer','Blitz (bestes)'], r:rows},
       {k:'legend', i:[['g','geschafft: mind. 8 von 10 beim 1. Versuch'],['y','geübt (bestes Ergebnis)'],['n','noch offen']]},
       {k:'h', x:'So geht es weiter'},
       {k:'list', i:lines},
-      {k:'p', s:'muted', o:1, x:'+1 bis +5 / −1 bis −5: Rechenweg Plus und Minus (Z±Z, ZE±Z, ZE±E, ZE±ZE ohne und mit Übergang). Leicht: mit Hunderterfeld. Mittel: weniger Hilfen. Schwer: im Kopf.'}
+      {k:'p', s:'muted', o:1, x:'+1 bis +6 / −1 bis −6: Rechenweg Plus und Minus (Z±Z, ZE±Z, ZE±E, ZE±E über den Zehner, ZE±ZE ohne und mit Übergang). Leicht: mit Hunderterfeld oder Zahlenstrahl. Mittel: weniger Hilfen. Schwer: im Kopf.'}
     ]};
   }
 });
