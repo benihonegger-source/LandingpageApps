@@ -65,5 +65,11 @@ window.APPS = [
     titel:  "Geld-Laden",
     uebt:   "Rechnen mit Franken und Rappen, Rückgeld geben",
     klasse: "1. und 2. Klasse"
+  },
+  {
+    datei:  "apps/bass-pult.html",
+    titel:  "Bass-Pult",
+    uebt:   "E-Bass lernen: Saiten, Muster, Lieder zum Mitspielen",
+    klasse: "ab 6 Jahren"
   }
 ];
